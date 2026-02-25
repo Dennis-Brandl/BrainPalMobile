@@ -76,3 +76,6 @@ export type {
   IExecutionLogger,
   IIdGenerator,
 } from './interfaces';
+
+// Events
+export { EngineEventBus, EngineEventQueue } from './events';
