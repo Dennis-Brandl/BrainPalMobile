@@ -14,6 +14,7 @@ export default function RootLayout() {
         <EngineProvider>
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="execution" options={{ headerShown: false }} />
           </Stack>
         </EngineProvider>
       </StoreInitializer>

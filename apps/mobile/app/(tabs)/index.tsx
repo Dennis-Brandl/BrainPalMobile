@@ -1,165 +1,223 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, typography, spacing } from '@brainpal/ui';
-import { useWorkflowStore, type MasterWorkflow } from '../../src/stores/workflow-store';
-import { useEnvironmentStore } from '../../src/stores/environment-store';
+// Home screen: Active/Library dual-tab layout for workflow management.
 
-function WorkflowCard({ workflow }: { workflow: MasterWorkflow }) {
-  return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{workflow.local_id}</Text>
-        <View style={styles.versionBadge}>
-          <Text style={styles.versionText}>v{workflow.version}</Text>
-        </View>
-      </View>
-      {workflow.description && (
-        <Text style={styles.cardDescription}>{workflow.description}</Text>
-      )}
-      {workflow.package_file_name && (
-        <Text style={styles.cardMeta}>{workflow.package_file_name}</Text>
-      )}
-    </View>
-  );
-}
+import React, { useCallback, useState } from 'react';
+import {
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter, type Href } from 'expo-router';
+import { colors, typography, spacing } from '@brainpal/ui';
+import { useWorkflowStore, type MasterWorkflow, type RuntimeWorkflowSummary } from '../../src/stores/workflow-store';
+import { useExecutionStore } from '../../src/stores/execution-store';
+import { ActiveWorkflowCard } from '../../src/components/workflow/WorkflowCard';
+import { LibraryWorkflowCard } from '../../src/components/workflow/WorkflowCard';
+
+// ---------------------------------------------------------------------------
+// Tab type
+// ---------------------------------------------------------------------------
+
+type TabKey = 'active' | 'library';
+
+// ---------------------------------------------------------------------------
+// Home Screen
+// ---------------------------------------------------------------------------
 
 export default function HomeScreen() {
-  const { masterWorkflows } = useWorkflowStore();
-  const { properties } = useEnvironmentStore();
+  const [activeTab, setActiveTab] = useState<TabKey>('active');
+  const router = useRouter();
+
+  // Store data
+  const masterWorkflows = useWorkflowStore((s) => s.masterWorkflows);
+  const runtimeWorkflows = useWorkflowStore((s) => s.runtimeWorkflows);
+  const activeWorkflows = useExecutionStore((s) => s.activeWorkflows);
+
+  // Build active workflow list from execution store + workflow store
+  const activeWorkflowList: RuntimeWorkflowSummary[] = React.useMemo(() => {
+    // Merge: use execution store for active ones, workflow store for runtime list
+    const activeIds = new Set(Object.keys(activeWorkflows));
+    const fromExec: RuntimeWorkflowSummary[] = Object.values(activeWorkflows).map((wf) => ({
+      instanceId: wf.instanceId,
+      masterOid: wf.masterOid,
+      name: wf.name,
+      workflowState: wf.workflowState,
+      startedAt: wf.startedAt,
+      lastActivityAt: wf.lastActivityAt,
+    }));
+    // Also include runtime workflows from the workflow store that aren't in execution store
+    const fromStore = runtimeWorkflows.filter((w) => !activeIds.has(w.instanceId));
+    return [...fromExec, ...fromStore];
+  }, [activeWorkflows, runtimeWorkflows]);
+
+  // Navigation handlers
+  const handleActivePress = useCallback(
+    (instanceId: string) => {
+      router.push(`/execution/${instanceId}` as Href);
+    },
+    [router],
+  );
+
+  const handleLibraryPress = useCallback(
+    (oid: string) => {
+      router.push(`/execution/library/${oid}` as Href);
+    },
+    [router],
+  );
+
+  // Render items
+  const renderActiveItem = useCallback(
+    ({ item }: { item: RuntimeWorkflowSummary }) => (
+      <ActiveWorkflowCard
+        workflow={item}
+        onPress={() => handleActivePress(item.instanceId)}
+      />
+    ),
+    [handleActivePress],
+  );
+
+  const renderLibraryItem = useCallback(
+    ({ item }: { item: MasterWorkflow }) => (
+      <LibraryWorkflowCard
+        workflow={item}
+        onPress={() => handleLibraryPress(item.oid)}
+      />
+    ),
+    [handleLibraryPress],
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <FlatList
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={
-          <>
-            <Text style={styles.title}>BrainPal Mobile</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>BrainPal Mobile</Text>
+      </View>
 
-            {/* Workflows section */}
-            <Text style={styles.sectionTitle}>
-              {masterWorkflows.length} workflow(s) available
-            </Text>
-          </>
-        }
-        data={masterWorkflows}
-        keyExtractor={(item) => item.oid}
-        renderItem={({ item }) => <WorkflowCard workflow={item} />}
-        ListFooterComponent={
-          <>
-            {/* Environment properties section */}
-            <Text style={styles.sectionTitle}>Environment Properties</Text>
-            {properties.length === 0 ? (
-              <Text style={styles.emptyText}>No environment properties</Text>
-            ) : (
-              properties.map((prop) => (
-                <View
-                  key={`${prop.environment_oid}-${prop.property_name}`}
-                  style={styles.card}
-                >
-                  <Text style={styles.cardTitle}>{prop.property_name}</Text>
-                  {prop.entries.map((entry, i) => (
-                    <View key={i} style={styles.entryRow}>
-                      <Text style={styles.entryName}>{entry.name}</Text>
-                      <Text style={styles.entryValue}>{entry.value}</Text>
-                    </View>
-                  ))}
-                </View>
-              ))
-            )}
-          </>
-        }
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>
-            Import a .WFmasterX package to get started
+      {/* Tab bar */}
+      <View style={styles.tabBar}>
+        <Pressable
+          style={[styles.tab, activeTab === 'active' && styles.tabActive]}
+          onPress={() => setActiveTab('active')}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === 'active' && styles.tabTextActive,
+            ]}
+          >
+            Active
           </Text>
-        }
-      />
+        </Pressable>
+        <Pressable
+          style={[styles.tab, activeTab === 'library' && styles.tabActive]}
+          onPress={() => setActiveTab('library')}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === 'library' && styles.tabTextActive,
+            ]}
+          >
+            Library
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* Content */}
+      {activeTab === 'active' ? (
+        <FlatList
+          contentContainerStyle={styles.listContent}
+          data={activeWorkflowList}
+          keyExtractor={(item) => item.instanceId}
+          renderItem={renderActiveItem}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No active workflows</Text>
+              <Text style={styles.emptyHint}>
+                Go to the Library tab to start a workflow
+              </Text>
+            </View>
+          }
+        />
+      ) : (
+        <FlatList
+          contentContainerStyle={styles.listContent}
+          data={masterWorkflows}
+          keyExtractor={(item) => item.oid}
+          renderItem={renderLibraryItem}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No workflows downloaded</Text>
+              <Text style={styles.emptyHint}>
+                Import a .WFmasterX package to get started
+              </Text>
+            </View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
-  listContent: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl,
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
   },
   title: {
     ...typography.heading,
     color: colors.textPrimary,
-    marginBottom: spacing.lg,
   },
-  sectionTitle: {
-    ...typography.subheading,
-    color: colors.textPrimary,
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    padding: spacing.base,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  cardHeader: {
+  tabBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  cardTitle: {
-    ...typography.subheading,
-    color: colors.textPrimary,
+  tab: {
     flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
-  versionBadge: {
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 4,
+  tabActive: {
+    borderBottomColor: colors.primary,
   },
-  versionText: {
-    ...typography.caption,
+  tabText: {
+    ...typography.subheading,
+    color: colors.textSecondary,
+  },
+  tabTextActive: {
     color: colors.primary,
-    fontWeight: '600',
   },
-  cardDescription: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
+  listContent: {
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
-  cardMeta: {
-    ...typography.caption,
-    color: colors.textSecondary,
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xxl,
   },
   emptyText: {
+    ...typography.subheading,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  emptyHint: {
     ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
-    paddingVertical: spacing.lg,
-  },
-  entryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.xs,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    marginTop: spacing.xs,
-  },
-  entryName: {
-    ...typography.body,
-    color: colors.textPrimary,
-    fontWeight: '500',
-  },
-  entryValue: {
-    ...typography.body,
-    color: colors.textSecondary,
-    flex: 1,
-    textAlign: 'right',
   },
 });

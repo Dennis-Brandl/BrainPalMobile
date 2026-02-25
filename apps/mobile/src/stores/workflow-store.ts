@@ -68,6 +68,25 @@ function runtimeRowToSummary(row: RuntimeWorkflowRow): RuntimeWorkflowSummary {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Standalone query: get full specification JSON for a master workflow
+// ---------------------------------------------------------------------------
+
+export async function getSpecificationJson(
+  db: SQLiteDatabase,
+  oid: string,
+): Promise<string | null> {
+  const row = await db.getFirstAsync<{ specification_json: string }>(
+    'SELECT specification_json FROM master_workflows WHERE oid = ?',
+    [oid],
+  );
+  return row?.specification_json ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Store
+// ---------------------------------------------------------------------------
+
 export const useWorkflowStore = create<WorkflowStore>()((set) => ({
   masterWorkflows: [],
   runtimeWorkflows: [],
