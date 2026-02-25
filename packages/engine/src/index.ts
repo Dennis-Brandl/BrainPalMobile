@@ -79,3 +79,12 @@ export type {
 
 // Events
 export { EngineEventBus, EngineEventQueue } from './events';
+
+// State Machine
+export { StateMachine, InvalidTransitionError } from './state-machine';
+export { ISA88_OBSERVABLE_TRANSITIONS, ISA88_OPAQUE_TRANSITIONS } from './state-machine';
+export type { StateTransitionRule, StateMachineConfig, StepContext } from './state-machine';
+
+// Scheduler
+export { Scheduler } from './scheduler';
+export type { AdjacencyList, SchedulerContext } from './scheduler';
