@@ -7,10 +7,10 @@
 
 ### Foundation
 
-- [ ] **FNDTN-01**: Monorepo scaffold with engine, protocol, storage, ui packages + mobile and web apps
-- [ ] **FNDTN-02**: SQLite database initialized with WAL mode, schema v1, and write-ahead persistence pattern
-- [ ] **FNDTN-03**: Zustand stores configured as read-through cache of SQLite state
-- [ ] **FNDTN-04**: Cross-platform baseline verified on Android, iOS, and web
+- [x] **FNDTN-01**: Monorepo scaffold with engine, protocol, storage, ui packages + mobile and web apps
+- [x] **FNDTN-02**: SQLite database initialized with WAL mode, schema v1, and write-ahead persistence pattern
+- [x] **FNDTN-03**: Zustand stores configured as read-through cache of SQLite state
+- [x] **FNDTN-04**: Cross-platform baseline verified on Android, iOS, and web
 
 ### Package Management
 
@@ -48,11 +48,11 @@
 
 ### Persistence
 
-- [ ] **PERS-01**: All state changes persisted to SQLite before in-memory state (write-ahead)
+- [x] **PERS-01**: All state changes persisted to SQLite before in-memory state (write-ahead)
 - [ ] **PERS-02**: Active workflows resume from persisted SQLite state on app restart
 - [ ] **PERS-03**: Execution log entries appended for all engine events with timestamps
 - [ ] **PERS-04**: Workflow Value Properties deleted after workflow completion and log generation
-- [ ] **PERS-05**: Environment Value Properties retained across workflow executions
+- [x] **PERS-05**: Environment Value Properties retained across workflow executions
 
 ### History & Reporting
 

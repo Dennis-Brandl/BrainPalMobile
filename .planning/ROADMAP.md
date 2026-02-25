@@ -12,7 +12,7 @@ BrainPal Mobile is built in five phases that follow the dependency chain: founda
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Monorepo scaffold, SQLite persistence layer, cross-platform baseline on all three targets
+- [x] **Phase 1: Foundation** - Monorepo scaffold, SQLite persistence layer, cross-platform baseline on all three targets
 - [ ] **Phase 2: Engine Core** - ISA-88 state machine, scheduler, parameter/condition subsystems, import pipeline, crash recovery
 - [ ] **Phase 3: Execution UI** - WYSIWYG form renderer, step carousel, execution screen, home screen, state controls, navigation
 - [ ] **Phase 4: Workflow Proxy + Ancillary Features** - Nested workflow execution, history display, notifications, settings
@@ -34,9 +34,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: TBD
 
 Plans:
-- [ ] 01-01: Monorepo scaffold and cross-platform smoke test
-- [ ] 01-02: SQLite schema, WAL mode, write-ahead persistence pattern
-- [ ] 01-03: Zustand read-through cache and web platform configuration
+- [x] 01-01: Monorepo scaffold and cross-platform smoke test
+- [x] 01-02: SQLite schema, WAL mode, write-ahead persistence pattern
+- [x] 01-03: Zustand read-through cache and web platform configuration
 
 ### Phase 2: Engine Core
 **Goal**: The pure-TypeScript engine can import workflow packages, create runtime workflow instances, and execute them step-by-step through the state machine with scheduling, parameter resolution, condition evaluation, and crash recovery -- all verified by automated tests without any UI
@@ -112,7 +112,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
-| 1. Foundation | 0/3 | Not started | - |
+| 1. Foundation | 3/3 | ✓ Complete | 2026-02-25 |
 | 2. Engine Core | 0/5 | Not started | - |
 | 3. Execution UI | 0/4 | Not started | - |
 | 4. Workflow Proxy + Ancillary | 0/3 | Not started | - |
@@ -120,4 +120,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 ---
 *Roadmap created: 2026-02-24*
-*Last updated: 2026-02-24*
+*Last updated: 2026-02-25*
