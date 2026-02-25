@@ -1,1 +1,2 @@
-export const STORAGE_VERSION = '0.0.1';
+export { initializeDatabase } from './database/connection';
+export * from './types';
