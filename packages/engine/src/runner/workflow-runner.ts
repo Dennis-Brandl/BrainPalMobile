@@ -480,6 +480,15 @@ export class WorkflowRunner {
       timestamp: new Date().toISOString(),
     });
 
+    this.config.eventBus.emit('STEP_STATE_CHANGED', {
+      stepInstanceId,
+      workflowInstanceId,
+      stepOid,
+      fromState: fromIdle,
+      toState: 'WAITING',
+      event: 'START',
+    });
+
     // Check resource commands (simplified: skip if none)
     const masterStep = this.getMasterStep(step);
     const hasResourceCommands = masterStep.resource_command_specifications?.length > 0;
@@ -523,6 +532,15 @@ export class WorkflowRunner {
       event_type: 'STEP_STATE_CHANGED',
       event_data_json: JSON.stringify({ fromState: fromWaiting, toState: 'STARTING', event: 'SC' }),
       timestamp: new Date().toISOString(),
+    });
+
+    this.config.eventBus.emit('STEP_STATE_CHANGED', {
+      stepInstanceId,
+      workflowInstanceId,
+      stepOid,
+      fromState: fromWaiting,
+      toState: 'STARTING',
+      event: 'SC',
     });
 
     // Execute STARTING phase

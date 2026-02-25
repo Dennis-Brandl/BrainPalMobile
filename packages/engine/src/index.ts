@@ -110,7 +110,7 @@ export type { ManifestSchema, ManifestFileEntry, ExtractedPackage, ImportResult 
 
 // Runner (WorkflowRunner, lifecycle, step executor)
 export { WorkflowRunner } from './runner';
-export { createRuntimeWorkflow, completeWorkflow, abortWorkflow } from './runner';
+export { createRuntimeWorkflow, completeWorkflow, abortWorkflow, recoverWorkflows } from './runner';
 export { UnsupportedStepTypeError } from './runner';
 export type { RunnerConfig, WorkflowRunnerState, RecoveryResult, CreateRuntimeWorkflowResult } from './runner';
 

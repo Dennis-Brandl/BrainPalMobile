@@ -14,4 +14,5 @@ export {
   UnsupportedStepTypeError,
 } from './step-executor';
 export type { StepExecutionContext } from './step-executor';
+export { recoverWorkflows } from './crash-recovery';
 export type { RunnerConfig, WorkflowRunnerState, RecoveryResult } from './types';

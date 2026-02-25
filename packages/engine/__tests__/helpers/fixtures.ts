@@ -201,7 +201,7 @@ export function makeSelect1Workflow(branchCount: number): MasterWorkflowSpecific
   selectStep.input_parameter_specifications = [
     {
       id: 'choice',
-      default_value: '',
+      default_value: 'UserChoice.Value',
       value_type: 'property',
     },
   ];
