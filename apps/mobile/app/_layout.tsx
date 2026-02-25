@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { SQLiteProvider } from 'expo-sqlite';
 import { initializeDatabase } from '@brainpal/storage';
+import { StoreInitializer } from '../src/providers/StoreInitializer';
 
 export default function RootLayout() {
   return (
@@ -8,9 +9,11 @@ export default function RootLayout() {
       databaseName="brainpal_mobile.db"
       onInit={initializeDatabase}
     >
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
+      <StoreInitializer>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </StoreInitializer>
     </SQLiteProvider>
   );
 }
