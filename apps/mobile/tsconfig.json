@@ -5,8 +5,17 @@
     "declaration": false,
     "declarationMap": false,
     "paths": {
-      "@brainpal/*": ["../../packages/*/src"]
+      "@brainpal/*": [
+        "../../packages/*/src"
+      ]
     }
   },
-  "include": ["app", "src", "*.ts", "*.tsx", ".expo/types/**/*.ts"]
+  "include": [
+    "app",
+    "src",
+    "*.ts",
+    "*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ]
 }
