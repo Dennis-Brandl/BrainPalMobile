@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 2 of 5 (Engine Core)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-25 -- Completed 02-01-PLAN.md
+Last activity: 2026-02-25 -- Completed 02-02-PLAN.md
 
-Progress: [#####...............] 4/8 Plans (Phase 1: 3/3, Phase 2: 1/5)
+Progress: [######..............] 5/8 Plans (Phase 1: 3/3, Phase 2: 2/5)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 5.0 min
-- Total execution time: 0.33 hours
+- Total plans completed: 5
+- Average duration: 5.2 min
+- Total execution time: 0.43 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 13 min | 4.3 min |
-| 02-engine-core | 1/5 | 7 min | 7.0 min |
+| 02-engine-core | 2/5 | 13 min | 6.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (8 min), 01-02 (3 min), 01-03 (2 min), 02-01 (7 min)
+- Last 5 plans: 01-02 (3 min), 01-03 (2 min), 02-01 (7 min), 02-02 (6 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -61,6 +61,8 @@ Recent decisions affecting current work:
 - [02-01]: Runtime types use JSON string fields (step_json, specification_json) matching SQLite storage pattern
 - [02-01]: EngineEvent is both a discriminated union (for queue) and EngineEventMap (for typed bus)
 - [02-01]: PackageImage uses Uint8Array for binary image data (compatible with fflate output)
+- [02-02]: Wildcard *_ACTIVE matching uses guard function checking ACTIVE_STATES set -- keeps transition table as pure data
+- [02-02]: Scheduler checks target step_state for WAIT_ANY idempotency (only activates if IDLE) -- prevents double-activation
 
 ### Pending Todos
 
@@ -72,6 +74,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T18:20:39Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-02-25T18:33:39Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
