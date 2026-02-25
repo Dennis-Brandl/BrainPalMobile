@@ -89,7 +89,30 @@ export type { StateTransitionRule, StateMachineConfig, StepContext } from './sta
 export { Scheduler } from './scheduler';
 export type { AdjacencyList, SchedulerContext } from './scheduler';
 
+// Parameter Resolver
+export { ParameterResolver } from './parameter-resolver';
+export { ScopeResolver } from './parameter-resolver';
+export type { ResolvedParameter as ParamResolvedParameter, ParameterResolutionResult } from './parameter-resolver';
+
+// Condition Evaluator
+export { ConditionEvaluator, evaluateCondition, evaluate } from './condition-evaluator';
+export { ConditionNotMatchedError } from './condition-evaluator';
+export type { Select1EvalConfig, ConditionResult } from './condition-evaluator';
+
+// Resource Manager
+export { ResourceManager } from './resource-manager';
+export type { ResourceRequest, AcquireResult, ReleaseResult, SyncBarrierRequest, SyncBarrierResult } from './resource-manager';
+
 // Import Pipeline
 export { PackageImporter, PackageValidationError } from './import';
 export { parseManifest, validateFileReferences, extractPackage, getMimeType } from './import';
 export type { ManifestSchema, ManifestFileEntry, ExtractedPackage, ImportResult } from './import';
+
+// Runner (WorkflowRunner, lifecycle, step executor)
+export { WorkflowRunner } from './runner';
+export { createRuntimeWorkflow, completeWorkflow, abortWorkflow } from './runner';
+export { UnsupportedStepTypeError } from './runner';
+export type { RunnerConfig, WorkflowRunnerState, RecoveryResult, CreateRuntimeWorkflowResult } from './runner';
+
+// Execution Logger
+export { ExecutionLogService } from './logger';

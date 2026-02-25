@@ -30,13 +30,13 @@ export function evaluateCondition(
     case 'not_equals':
       return a !== b;
     case 'greater_than':
-      return a > b;
+      return (a as number) > (b as number);
     case 'less_than':
-      return a < b;
+      return (a as number) < (b as number);
     case 'greater_than_or_equal':
-      return a >= b;
+      return (a as number) >= (b as number);
     case 'less_than_or_equal':
-      return a <= b;
+      return (a as number) <= (b as number);
     case 'contains':
       return String(a).includes(String(b));
     case 'not_contains':
