@@ -12,3 +12,5 @@ export { PackageValidationError } from './types';
 export { parseManifest, validateFileReferences } from './manifest-parser';
 
 export { extractPackage, getMimeType } from './package-extractor';
+
+export { PackageImporter } from './package-importer';

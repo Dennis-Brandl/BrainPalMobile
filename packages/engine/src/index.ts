@@ -88,3 +88,8 @@ export type { StateTransitionRule, StateMachineConfig, StepContext } from './sta
 // Scheduler
 export { Scheduler } from './scheduler';
 export type { AdjacencyList, SchedulerContext } from './scheduler';
+
+// Import Pipeline
+export { PackageImporter, PackageValidationError } from './import';
+export { parseManifest, validateFileReferences, extractPackage, getMimeType } from './import';
+export type { ManifestSchema, ManifestFileEntry, ExtractedPackage, ImportResult } from './import';
