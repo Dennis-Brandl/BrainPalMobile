@@ -10,6 +10,7 @@ export interface MasterWorkflow {
   description: string | null;
   downloaded_at: string;
   package_file_name: string | null;
+  stepCount: number;
 }
 
 export interface RuntimeWorkflowSummary {
@@ -33,6 +34,11 @@ interface WorkflowStore {
 }
 
 function rowToWorkflow(row: MasterWorkflowRow): MasterWorkflow {
+  let stepCount = 0;
+  try {
+    const spec = JSON.parse(row.specification_json);
+    stepCount = spec.steps?.length ?? 0;
+  } catch { /* ignore parse errors */ }
   return {
     oid: row.oid,
     local_id: row.local_id,
@@ -40,6 +46,7 @@ function rowToWorkflow(row: MasterWorkflowRow): MasterWorkflow {
     description: row.description,
     downloaded_at: row.downloaded_at,
     package_file_name: row.package_file_name,
+    stepCount,
   };
 }
 
