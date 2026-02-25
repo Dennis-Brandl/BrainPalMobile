@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 3 of 5 (Execution UI)
-Plan: 0 of 4 in current phase
-Status: Ready to plan
-Last activity: 2026-02-25 -- Phase 2 Engine Core complete
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-02-25 -- Completed 03-01-PLAN.md
 
-Progress: [########............] 2/5 Phases
+Progress: [#########...........] 9/12 Plans (3/5 Phases started)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 5.8 min
-- Total execution time: 0.77 hours
+- Total plans completed: 9
+- Average duration: 6.0 min
+- Total execution time: 0.90 hours
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: [########............] 2/5 Phases
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 13 min | 4.3 min |
 | 02-engine-core | 5/5 | 35 min | 7.0 min |
+| 03-execution-ui | 1/4 | 8 min | 8.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (7 min), 02-02 (6 min), 02-03 (5 min), 02-04 (5 min), 02-05 (12 min)
-- Trend: stable (02-05 larger due to integration scope)
+- Last 5 plans: 02-02 (6 min), 02-03 (5 min), 02-04 (5 min), 02-05 (12 min), 03-01 (8 min)
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -76,6 +77,10 @@ Recent decisions affecting current work:
 - [02-05]: Crash recovery creates StateMachine at persisted state (not replaying from IDLE)
 - [02-05]: Stale workflow threshold is 24 hours; stale workflows returned separately for UI prompt
 - [02-05]: Unsupported step types (WORKFLOW_PROXY, ACTION_PROXY, SCRIPT) throw UnsupportedStepTypeError
+- [03-01]: SyncBarrier uses SQLite auto-increment id cast to string as engine entry ID
+- [03-01]: Active steps derived from STEP_STATE_CHANGED events with step type cache, not ACTIVE_STEPS_CHANGED event
+- [03-01]: EngineProvider uses useRef for runner/eventBus/config to create instances once
+- [03-01]: Crash recovery rebuilds WorkflowRunnerState with static imports of Scheduler/StateMachine
 
 ### Pending Todos
 
@@ -88,5 +93,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Phase 2 Engine Core complete, ready to plan Phase 3
+Stopped at: Completed 03-01-PLAN.md (Engine-to-UI Bridge)
 Resume file: None
