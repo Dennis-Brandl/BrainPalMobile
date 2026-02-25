@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 1 of 5 (Foundation)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-25 -- Completed 01-01-PLAN.md (monorepo scaffold)
+Last activity: 2026-02-25 -- Completed 01-02-PLAN.md (SQLite persistence layer)
 
-Progress: [###.................] 1/3 Phase 1
+Progress: [#############.......] 2/3 Phase 1
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 8 min
-- Total execution time: 0.13 hours
+- Total plans completed: 2
+- Average duration: 5.5 min
+- Total execution time: 0.18 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 1/3 | 8 min | 8 min |
+| 01-foundation | 2/3 | 11 min | 5.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (8 min)
+- Last 5 plans: 01-01 (8 min), 01-02 (3 min)
 - Trend: --
 
 *Updated after each plan completion*
@@ -50,6 +50,9 @@ Recent decisions affecting current work:
 - [01-01]: TypeScript ~5.9.2 required by Expo SDK 54 (not ~5.8.0 from research)
 - [01-01]: Shared packages point main/types at src/index.ts directly (Metro resolves .ts in dev)
 - [01-01]: @expo/vector-icons v15 is SDK 54 default (not v14)
+- [01-02]: withExclusiveTransactionAsync returns Promise<void>, WriteQueue captures result via closure
+- [01-02]: react-native added as peerDependency to @brainpal/storage for Platform import
+- [01-02]: SCHEMA_SQL and SEED_SQL internal only (not exported from @brainpal/storage public API)
 
 ### Pending Todos
 
@@ -62,5 +65,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 01-01-PLAN.md (monorepo scaffold with 5-tab navigation)
+Stopped at: Completed 01-02-PLAN.md (SQLite persistence layer with 18 tables, WriteQueue, writeAhead)
 Resume file: None
