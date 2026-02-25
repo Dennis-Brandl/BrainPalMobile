@@ -142,8 +142,33 @@ export interface FormLayoutEntry {
   elements: FormElementSpec[];
 }
 
+export type FormElementType =
+  | 'text'
+  | 'header'
+  | 'input'
+  | 'image'
+  | 'video'
+  | 'checkbox'
+  | 'button'
+  | 'select'
+  | 'dropdown'
+  | 'date'
+  | 'datepicker'
+  | 'textarea'
+  | 'number'
+  | 'numeric'
+  | 'toggle'
+  | 'switch'
+  | 'radio'
+  | 'radiobutton';
+
+export interface FormElementOption {
+  label: string;
+  value: string;
+}
+
 export interface FormElementSpec {
-  type: 'text' | 'header' | 'input' | 'image' | 'video' | 'checkbox' | 'button';
+  type: FormElementType | (string & {});  // known types + fallback for unknown
   content?: { content: string; plainText: string };
   x: number;
   y: number;
@@ -153,6 +178,7 @@ export interface FormElementSpec {
   color?: string;
   align?: string;
   src?: string;
+  options?: FormElementOption[];
 }
 
 // ---------------------------------------------------------------------------

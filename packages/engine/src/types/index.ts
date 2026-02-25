@@ -31,6 +31,8 @@ export type {
   Select1Config,
   Select1Option,
   FormLayoutEntry,
+  FormElementType,
+  FormElementOption,
   FormElementSpec,
   MasterWorkflowConnection,
   ConditionConnection,
