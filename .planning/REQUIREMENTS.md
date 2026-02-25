@@ -14,26 +14,26 @@
 
 ### Package Management
 
-- [ ] **PKG-01**: User can import .WFmasterX file from device storage via file picker
-- [ ] **PKG-02**: System extracts workflow specs, environment specs, action specs, and images from ZIP package into SQLite
-- [ ] **PKG-03**: User can view list of downloaded master workflow specifications on the Home screen
-- [ ] **PKG-04**: User can delete a downloaded workflow and its associated data
-- [ ] **PKG-05**: System replaces older package when importing a newer version of the same workflow
+- [x] **PKG-01**: User can import .WFmasterX file from device storage via file picker
+- [x] **PKG-02**: System extracts workflow specs, environment specs, action specs, and images from ZIP package into SQLite
+- [x] **PKG-03**: User can view list of downloaded master workflow specifications on the Home screen
+- [x] **PKG-04**: User can delete a downloaded workflow and its associated data
+- [x] **PKG-05**: System replaces older package when importing a newer version of the same workflow
 
 ### Workflow Execution
 
-- [ ] **EXEC-01**: User can create a Runtime Workflow as a deep copy of a Master Workflow Specification
-- [ ] **EXEC-02**: ISA-88 state machine manages step lifecycle (observable track: IDLE through COMPLETED)
-- [ ] **EXEC-03**: Scheduler determines next steps from workflow graph when a step completes
+- [x] **EXEC-01**: User can create a Runtime Workflow as a deep copy of a Master Workflow Specification
+- [x] **EXEC-02**: ISA-88 state machine manages step lifecycle (observable track: IDLE through COMPLETED)
+- [x] **EXEC-03**: Scheduler determines next steps from workflow graph when a step completes
 - [ ] **EXEC-04**: Scheduler handles PARALLEL fork (activates all outgoing branches concurrently)
 - [ ] **EXEC-05**: Scheduler handles WAIT ALL join (proceeds when all incoming branches complete)
 - [ ] **EXEC-06**: Scheduler handles WAIT ANY join (proceeds when first incoming branch completes)
-- [ ] **EXEC-07**: Condition Evaluator handles SELECT 1 branching with all 10 comparison operators
+- [x] **EXEC-07**: Condition Evaluator handles SELECT 1 branching with all 10 comparison operators
 - [ ] **EXEC-08**: Resource Manager acquires resources with FIFO queues and deadlock prevention (alphabetical order)
 - [ ] **EXEC-09**: Resource Manager handles SYNC barriers (Synchronize, Send, Receive matching)
 - [ ] **EXEC-10**: Workflow Proxy steps create and execute child workflows with output parameter propagation
-- [ ] **EXEC-11**: Parameter Resolver resolves inputs (literal values and Value Property lookups)
-- [ ] **EXEC-12**: Parameter Resolver writes outputs to Value Properties (workflow and environment scope)
+- [x] **EXEC-11**: Parameter Resolver resolves inputs (literal values and Value Property lookups)
+- [x] **EXEC-12**: Parameter Resolver writes outputs to Value Properties (workflow and environment scope)
 
 ### User Interface
 
@@ -49,9 +49,9 @@
 ### Persistence
 
 - [x] **PERS-01**: All state changes persisted to SQLite before in-memory state (write-ahead)
-- [ ] **PERS-02**: Active workflows resume from persisted SQLite state on app restart
-- [ ] **PERS-03**: Execution log entries appended for all engine events with timestamps
-- [ ] **PERS-04**: Workflow Value Properties deleted after workflow completion and log generation
+- [x] **PERS-02**: Active workflows resume from persisted SQLite state on app restart
+- [x] **PERS-03**: Execution log entries appended for all engine events with timestamps
+- [x] **PERS-04**: Workflow Value Properties deleted after workflow completion and log generation
 - [x] **PERS-05**: Environment Value Properties retained across workflow executions
 
 ### History & Reporting

@@ -13,7 +13,7 @@ BrainPal Mobile is built in five phases that follow the dependency chain: founda
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Monorepo scaffold, SQLite persistence layer, cross-platform baseline on all three targets
-- [ ] **Phase 2: Engine Core** - ISA-88 state machine, scheduler, parameter/condition subsystems, import pipeline, crash recovery
+- [x] **Phase 2: Engine Core** - ISA-88 state machine, scheduler, parameter/condition subsystems, import pipeline, crash recovery
 - [ ] **Phase 3: Execution UI** - WYSIWYG form renderer, step carousel, execution screen, home screen, state controls, navigation
 - [ ] **Phase 4: Workflow Proxy + Ancillary Features** - Nested workflow execution, history display, notifications, settings
 - [ ] **Phase 5: Polish + PDF Export** - Execution report export, performance tuning, production hardening
@@ -51,11 +51,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- Engine types, interfaces, event bus, event queue, Vitest config, and mock repositories
-- [ ] 02-02-PLAN.md -- ISA-88 table-driven state machine and DAG-based scheduler
-- [ ] 02-03-PLAN.md -- Parameter resolver with scope chain, condition evaluator (10 operators), and resource manager
-- [ ] 02-04-PLAN.md -- Import pipeline (fflate ZIP extraction, manifest parsing, version replacement)
-- [ ] 02-05-PLAN.md -- WorkflowRunner, step executor, crash recovery, execution logging, and integration tests
+- [x] 02-01: Engine types, interfaces, event bus, event queue, Vitest config, and mock repositories
+- [x] 02-02: ISA-88 table-driven state machine and DAG-based scheduler
+- [x] 02-03: Parameter resolver with scope chain, condition evaluator (10 operators), and resource manager
+- [x] 02-04: Import pipeline (fflate ZIP extraction, manifest parsing, version replacement)
+- [x] 02-05: WorkflowRunner, step executor, crash recovery, execution logging, and integration tests
 
 ### Phase 3: Execution UI
 **Goal**: Users can see their workflows, launch execution, interact with WYSIWYG forms rendered faithfully across device types, navigate parallel branches via the step carousel, and control workflow state from the execution screen
@@ -113,11 +113,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
 | 1. Foundation | 3/3 | ✓ Complete | 2026-02-25 |
-| 2. Engine Core | 0/5 | Planning complete | - |
+| 2. Engine Core | 5/5 | ✓ Complete | 2026-02-25 |
 | 3. Execution UI | 0/4 | Not started | - |
 | 4. Workflow Proxy + Ancillary | 0/3 | Not started | - |
 | 5. Polish + PDF Export | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-24*
-*Last updated: 2026-02-25*
+*Last updated: 2026-02-26*
