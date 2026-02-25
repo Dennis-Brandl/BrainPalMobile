@@ -1,14 +1,8 @@
-// FormCanvas: Scaled WYSIWYG canvas container with pinch-to-zoom.
+// FormCanvas: Scaled WYSIWYG canvas container.
 // Renders form elements at absolute positions within a uniformly scaled canvas.
 
 import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
 import type { FormLayoutEntry } from '@brainpal/engine';
 import { useCanvasScale } from '../../hooks/useCanvasScale';
 import { FormElementRenderer } from './FormElementRenderer';
@@ -27,9 +21,6 @@ export interface FormCanvasProps {
   images?: Map<string, string>;
 }
 
-const MIN_SCALE_FACTOR = 0.5; // Minimum zoom = half computed scale
-const MAX_SCALE = 2.0;        // Maximum zoom = 2x
-
 export function FormCanvas({
   layout,
   formData,
@@ -37,43 +28,10 @@ export function FormCanvas({
   renderActionButtons,
   images,
 }: FormCanvasProps) {
-  const { scale: computedScale, scaledWidth, scaledHeight } = useCanvasScale(
+  const { scale, scaledWidth, scaledHeight } = useCanvasScale(
     layout.canvasWidth,
     layout.canvasHeight,
   );
-
-  // Pinch-to-zoom shared values
-  const currentScale = useSharedValue(computedScale);
-  const savedScale = useSharedValue(computedScale);
-
-  const minScale = computedScale * MIN_SCALE_FACTOR;
-
-  const pinchGesture = Gesture.Pinch()
-    .onUpdate((event) => {
-      'worklet';
-      const newScale = savedScale.value * event.scale;
-      // Clamp between min and max
-      currentScale.value = Math.min(Math.max(newScale, minScale), MAX_SCALE);
-    })
-    .onEnd(() => {
-      'worklet';
-      savedScale.value = currentScale.value;
-    });
-
-  const animatedCanvasStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: currentScale.value }],
-  }));
-
-  // Compute the wrapper dimensions based on animated scale
-  // We use the static computed dimensions for the outer wrapper since
-  // the animated scale handles the visual transform
-  const animatedWrapperStyle = useAnimatedStyle(() => {
-    const ratio = currentScale.value / computedScale;
-    return {
-      width: scaledWidth * ratio,
-      height: scaledHeight * ratio,
-    };
-  });
 
   const handleFormDataChange = useCallback(
     (key: string, value: string) => {
@@ -89,42 +47,45 @@ export function FormCanvas({
       showsVerticalScrollIndicator
       bounces={false}
     >
-      <GestureDetector gesture={pinchGesture}>
-        <Animated.View style={[styles.canvasWrapper, animatedWrapperStyle]}>
-          <Animated.View
-            style={[
-              {
-                width: layout.canvasWidth,
-                height: layout.canvasHeight,
-                transformOrigin: 'left top',
-              },
-              animatedCanvasStyle,
-            ]}
-          >
-            <View style={styles.canvasBackground}>
-              {layout.elements.map((element, index) => (
-                <View
-                  key={`${element.type}-${element.x}-${element.y}-${index}`}
-                  style={{
-                    position: 'absolute',
-                    left: element.x,
-                    top: element.y,
-                    width: element.width,
-                    height: element.height,
-                  }}
-                >
-                  <FormElementRenderer
-                    element={element}
-                    formData={formData}
-                    onFormDataChange={handleFormDataChange}
-                    images={images}
-                  />
-                </View>
-              ))}
-            </View>
-          </Animated.View>
-        </Animated.View>
-      </GestureDetector>
+      <View
+        style={[
+          styles.canvasWrapper,
+          { width: scaledWidth, height: scaledHeight },
+        ]}
+      >
+        <View
+          style={[
+            {
+              width: layout.canvasWidth,
+              height: layout.canvasHeight,
+              transform: [{ scale }],
+              transformOrigin: 'left top',
+            },
+          ]}
+        >
+          <View style={styles.canvasBackground}>
+            {layout.elements.map((element, index) => (
+              <View
+                key={`${element.type}-${element.x}-${element.y}-${index}`}
+                style={{
+                  position: 'absolute',
+                  left: element.x,
+                  top: element.y,
+                  width: element.width,
+                  height: element.height,
+                }}
+              >
+                <FormElementRenderer
+                  element={element}
+                  formData={formData}
+                  onFormDataChange={handleFormDataChange}
+                  images={images}
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
 
       {renderActionButtons?.()}
     </ScrollView>
