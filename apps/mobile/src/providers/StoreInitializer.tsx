@@ -4,6 +4,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { colors, typography, spacing } from '@brainpal/ui';
 import { useEnvironmentStore } from '../stores/environment-store';
 import { useWorkflowStore } from '../stores/workflow-store';
+import { useExecutionStore } from '../stores/execution-store';
 
 /**
  * Initializes all Zustand stores from SQLite before rendering children.
@@ -25,6 +26,7 @@ export function StoreInitializer({ children }: PropsWithChildren) {
         await Promise.all([
           useEnvironmentStore.getState().loadFromDb(db),
           useWorkflowStore.getState().loadFromDb(db),
+          useExecutionStore.getState().loadFromDb(db),
         ]);
         if (!cancelled) {
           setIsReady(true);
