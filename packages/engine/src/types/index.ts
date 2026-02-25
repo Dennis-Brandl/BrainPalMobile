@@ -1,11 +1,6 @@
-// @brainpal/engine -- Pure TypeScript workflow execution engine.
-// Zero platform dependencies. All external dependencies injected via interfaces.
+// Types barrel -- re-exports all data model types.
 
-export const ENGINE_VERSION = '0.0.1';
-
-// Types
 export type {
-  // Common
   StepState,
   StateEvent,
   StepType,
@@ -14,7 +9,15 @@ export type {
   ResourceType,
   ResourceCommandType,
   ActionVisibility,
-  // Master
+} from './common';
+
+export {
+  ACTIVE_STATES,
+  TERMINAL_STATES,
+  SPEC_STEP_TYPE_MAP,
+} from './common';
+
+export type {
   ManagedElement,
   ParameterSpecification,
   OutputParameterSpecification,
@@ -39,7 +42,9 @@ export type {
   MasterActionSpecification,
   MasterActionLibrary,
   MasterWorkflowLibrary,
-  // Runtime
+} from './master';
+
+export type {
   RuntimeWorkflow,
   RuntimeWorkflowStep,
   WorkflowConnection,
@@ -50,29 +55,11 @@ export type {
   SyncBarrierEntry,
   StateTransition,
   ResolvedParameter,
-  // Events
+} from './runtime';
+
+export type {
   LogEventType,
   ExecutionLogEntry,
   EngineEventMap,
   EngineEvent,
-} from './types';
-
-export { ACTIVE_STATES, TERMINAL_STATES, SPEC_STEP_TYPE_MAP } from './types';
-
-// Interfaces
-export type {
-  IMasterWorkflowRepository,
-  IMasterEnvironmentRepository,
-  IMasterActionRepository,
-  IImageRepository,
-  PackageImage,
-  IWorkflowRepository,
-  IStepRepository,
-  IConnectionRepository,
-  IValuePropertyRepository,
-  IResourcePoolRepository,
-  IResourceQueueRepository,
-  ISyncBarrierRepository,
-  IExecutionLogger,
-  IIdGenerator,
-} from './interfaces';
+} from './events';

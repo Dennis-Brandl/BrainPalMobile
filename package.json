@@ -10,7 +10,9 @@
     "react-native": "$react-native"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.18",
     "turbo": "~2.8.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.18"
   }
 }
