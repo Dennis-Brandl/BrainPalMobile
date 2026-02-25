@@ -8,5 +8,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2"
   }
 }
