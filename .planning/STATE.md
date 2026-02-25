@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 3 of 5 (Execution UI)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-02-25 -- Completed 03-01-PLAN.md
+Last activity: 2026-02-25 -- Completed 03-02-PLAN.md
 
-Progress: [#########...........] 9/12 Plans (3/5 Phases started)
+Progress: [##########..........] 10/12 Plans (3/5 Phases started)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: 6.0 min
-- Total execution time: 0.90 hours
+- Total plans completed: 10
+- Average duration: 5.8 min
+- Total execution time: 0.97 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [#########...........] 9/12 Plans (3/5 Phases started)
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 13 min | 4.3 min |
 | 02-engine-core | 5/5 | 35 min | 7.0 min |
-| 03-execution-ui | 1/4 | 8 min | 8.0 min |
+| 03-execution-ui | 2/4 | 13 min | 6.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (6 min), 02-03 (5 min), 02-04 (5 min), 02-05 (12 min), 03-01 (8 min)
+- Last 5 plans: 02-03 (5 min), 02-04 (5 min), 02-05 (12 min), 03-01 (8 min), 03-02 (5 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -81,6 +81,10 @@ Recent decisions affecting current work:
 - [03-01]: Active steps derived from STEP_STATE_CHANGED events with step type cache, not ACTIVE_STEPS_CHANGED event
 - [03-01]: EngineProvider uses useRef for runner/eventBus/config to create instances once
 - [03-01]: Crash recovery rebuilds WorkflowRunnerState with static imports of Scheduler/StateMachine
+- [03-02]: stepCount derived during rowToWorkflow by parsing specification_json steps array length
+- [03-02]: getSpecificationJson as standalone export (not store method) since it needs db arg and doesn't modify state
+- [03-02]: Expo Router dynamic route paths cast via 'as Href' for typed routes before generation
+- [03-02]: Execution screen placeholder created for navigation target (full implementation in 03-03)
 
 ### Pending Todos
 
@@ -93,5 +97,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 03-01-PLAN.md (Engine-to-UI Bridge)
+Stopped at: Completed 03-02-PLAN.md (Home Screen and Library Detail)
 Resume file: None
