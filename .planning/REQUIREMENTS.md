@@ -1,7 +1,7 @@
 # Requirements: BrainPal Mobile
 
 **Defined:** 2026-02-24
-**Core Value:** Users can import a workflow package and execute it step-by-step on any platform — the execution engine must faithfully walk the workflow graph, render forms correctly, handle branching/resources/nesting, and persist state across crashes.
+**Core Value:** Users can import a workflow package and execute it step-by-step on any platform -- the execution engine must faithfully walk the workflow graph, render forms correctly, handle branching/resources/nesting, and persist state across crashes.
 
 ## v1 Requirements
 
@@ -163,10 +163,10 @@
 | SETT-03 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 37 total
-- Mapped to phases: 37
+- v1 requirements: 42 total
+- Mapped to phases: 42
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-24*
-*Last updated: 2026-02-24 after initial definition*
+*Last updated: 2026-02-24 after roadmap creation*
