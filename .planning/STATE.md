@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 2 of 5 (Engine Core)
-Plan: 3 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-25 -- Completed 02-03-PLAN.md
+Last activity: 2026-02-25 -- Completed 02-04-PLAN.md
 
-Progress: [########............] 6/8 Plans (Phase 1: 3/3, Phase 2: 3/5)
+Progress: [##########..........] 7/8 Plans (Phase 1: 3/3, Phase 2: 4/5)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 5.2 min
-- Total execution time: 0.52 hours
+- Total plans completed: 7
+- Average duration: 5.1 min
+- Total execution time: 0.60 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 13 min | 4.3 min |
-| 02-engine-core | 3/5 | 18 min | 6.0 min |
+| 02-engine-core | 4/5 | 23 min | 5.8 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (2 min), 02-01 (7 min), 02-02 (6 min), 02-03 (5 min)
+- Last 5 plans: 02-01 (7 min), 02-02 (6 min), 02-03 (5 min), 02-04 (5 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -67,6 +67,10 @@ Recent decisions affecting current work:
 - [02-03]: ConditionEvaluator exported as both pure functions and class for injection flexibility
 - [02-03]: ResourceManager requires IIdGenerator for SYNC barrier entry IDs
 - [02-03]: acquireAll stops on first failure to prevent partial acquisition deadlocks
+- [02-04]: fflate is the only runtime dependency for engine -- pure JS, zero deps, works in Node.js + React Native
+- [02-04]: All-or-nothing validation: extractPackage() validates everything in memory before any storage writes
+- [02-04]: Image filenames strip images/ prefix when stored (step1-photo.png not images/step1-photo.png)
+- [02-04]: Environments associated by workflowOid from manifest; actions keyed by their own OID
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T18:34:56Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-02-25T18:36:33Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
