@@ -67,13 +67,13 @@ Plans:
   3. Step carousel navigates between active user interaction steps with Previous/Next buttons and wrap-around; Yes/No steps render with custom labels and produce correct output values
   4. User can PAUSE, RESUME, STOP, and ABORT a running workflow from the execution screen; PARALLEL fork activates all branches concurrently; WAIT ALL and WAIT ANY joins proceed correctly
   5. Resource Manager acquires resources with FIFO queues and alphabetical deadlock prevention; SYNC barriers (Synchronize, Send, Receive) correctly synchronize parallel branches
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: Home screen, bottom tab navigation, and responsive layout shell
-- [ ] 03-02: Canvas scaling algorithm and WYSIWYG form renderer
-- [ ] 03-03: Step carousel, Yes/No renderer, and state control UI
-- [ ] 03-04: Parallel execution UI wiring (fork/join, resources, SYNC barriers)
+- [ ] 03-01: SQLite repository implementations, EngineProvider, execution store, and schema fix
+- [ ] 03-02: Home screen with Active/Library tabs, library detail screen, state badges, navigation
+- [ ] 03-03: Canvas scaling algorithm, WYSIWYG form renderer, and form element components
+- [ ] 03-04: Step carousel, execution screen, Yes/No support, and state control UI
 
 ### Phase 4: Workflow Proxy + Ancillary Features
 **Goal**: Users can execute workflows that contain nested child workflows (Workflow Proxy), view execution history with full detail, receive notifications for steps needing attention and errors, and manage app settings
@@ -120,4 +120,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 ---
 *Roadmap created: 2026-02-24*
-*Last updated: 2026-02-26*
+*Last updated: 2026-02-25*
