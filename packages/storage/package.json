@@ -1,0 +1,13 @@
+{
+  "name": "@brainpal/storage",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "expo-sqlite": "~16.0.0"
+  },
+  "peerDependencies": {
+    "react": "*"
+  }
+}

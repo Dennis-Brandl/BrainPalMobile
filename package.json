@@ -1,0 +1,16 @@
+{
+  "name": "brainpal-mobile",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "overrides": {
+    "react": "$react",
+    "react-native": "$react-native"
+  },
+  "devDependencies": {
+    "turbo": "~2.8.0",
+    "typescript": "~5.8.0"
+  }
+}
