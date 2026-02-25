@@ -107,6 +107,7 @@ CREATE TABLE runtime_workflows (
   created_at TEXT NOT NULL,
   started_at TEXT,
   completed_at TEXT,
+  last_activity_at TEXT,
   parent_workflow_instance_id TEXT,   -- For nested workflows
   parent_step_oid TEXT,              -- Step that spawned this child workflow
   FOREIGN KEY (master_workflow_oid) REFERENCES master_workflows(oid),
