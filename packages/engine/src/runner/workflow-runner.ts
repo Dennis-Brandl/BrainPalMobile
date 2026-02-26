@@ -911,6 +911,27 @@ export class WorkflowRunner implements IWorkflowRunnerForProxy {
       } else {
         nextStepOids = [];
       }
+    } else if (step?.step_type === 'YES_NO') {
+      // YES_NO: only follow the connection matching the user's selection.
+      // Buttons have outputValue "true" (Yes) / "false" (No).
+      // Connections have source_handle_id "yes" / "no".
+      const userInputs = completedStep?.user_inputs_json
+        ? JSON.parse(completedStep.user_inputs_json) as Record<string, string>
+        : null;
+      const outputValue = userInputs?._output;
+      const selectedHandle = outputValue === 'true' ? 'yes'
+        : outputValue === 'false' ? 'no'
+        : undefined;
+
+      if (selectedHandle) {
+        const matchedConns = runnerState.schedulerContext.connections.filter(
+          (c) => c.from_step_oid === stepOid && c.source_handle_id === selectedHandle,
+        );
+        nextStepOids = matchedConns.map((c) => c.to_step_oid);
+      } else {
+        // Fallback: if no handle match, follow all connections (legacy behavior)
+        nextStepOids = this.scheduler.getNextSteps(stepOid, runnerState.schedulerContext);
+      }
     } else {
       // Normal steps: use scheduler to get next steps
       nextStepOids = this.scheduler.getNextSteps(stepOid, runnerState.schedulerContext);
