@@ -2,6 +2,7 @@
 
 import React, { useCallback, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
@@ -10,11 +11,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, type Href } from 'expo-router';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors, typography, spacing } from '@brainpal/ui';
 import { useWorkflowStore, type MasterWorkflow, type RuntimeWorkflowSummary } from '../../src/stores/workflow-store';
 import { useExecutionStore } from '../../src/stores/execution-store';
 import { ActiveWorkflowCard } from '../../src/components/workflow/WorkflowCard';
 import { LibraryWorkflowCard } from '../../src/components/workflow/WorkflowCard';
+import { useImportWorkflow } from '../../src/hooks/useImportWorkflow';
 
 // ---------------------------------------------------------------------------
 // Tab type
@@ -29,6 +32,7 @@ type TabKey = 'active' | 'library';
 export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const router = useRouter();
+  const { importWorkflow, isImporting } = useImportWorkflow();
 
   // Store data
   const masterWorkflows = useWorkflowStore((s) => s.masterWorkflows);
@@ -93,6 +97,22 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>BrainPal Mobile</Text>
+        {activeTab === 'library' && (
+          <Pressable
+            style={styles.importButton}
+            onPress={importWorkflow}
+            disabled={isImporting}
+          >
+            {isImporting ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <>
+                <FontAwesome name="download" size={16} color={colors.primary} />
+                <Text style={styles.importButtonText}>Import</Text>
+              </>
+            )}
+          </Pressable>
+        )}
       </View>
 
       {/* Tab bar */}
@@ -171,6 +191,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
@@ -178,6 +201,21 @@ const styles = StyleSheet.create({
   title: {
     ...typography.heading,
     color: colors.textPrimary,
+  },
+  importButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    gap: spacing.xs,
+  },
+  importButtonText: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600',
   },
   tabBar: {
     flexDirection: 'row',
