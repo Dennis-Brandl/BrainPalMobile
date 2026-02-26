@@ -40,22 +40,25 @@ export function parseManifest(jsonString: string): ManifestSchema {
     throw new PackageValidationError('Manifest missing required field: packageVersion');
   }
 
-  // Required: packageType
-  if (obj.packageType !== 'runtime' && obj.packageType !== 'library') {
+  // Optional: packageType (default to "library" for .WFmasterX packages from BrainPal MD)
+  if (obj.packageType !== undefined && obj.packageType !== 'runtime' && obj.packageType !== 'library') {
     throw new PackageValidationError(
       'Manifest field packageType must be "runtime" or "library"',
     );
   }
-
-  // Required: schemaVersion
-  if (typeof obj.schemaVersion !== 'string' || obj.schemaVersion.length === 0) {
-    throw new PackageValidationError('Manifest missing required field: schemaVersion');
+  if (obj.packageType === undefined) {
+    obj.packageType = 'library';
   }
 
-  if (obj.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
-    throw new PackageValidationError(
-      `Unsupported schema version "${obj.schemaVersion}". Only "${SUPPORTED_SCHEMA_VERSION}" is supported`,
-    );
+  // Optional: schemaVersion (real BrainPal MD packages may omit it)
+  if (typeof obj.schemaVersion === 'string' && obj.schemaVersion.length > 0) {
+    if (obj.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
+      throw new PackageValidationError(
+        `Unsupported schema version "${obj.schemaVersion}". Only "${SUPPORTED_SCHEMA_VERSION}" is supported`,
+      );
+    }
+  } else {
+    obj.schemaVersion = SUPPORTED_SCHEMA_VERSION;
   }
 
   // Required: files array

@@ -83,11 +83,18 @@ describe('parseManifest', () => {
     );
   });
 
-  it('throws when schemaVersion is missing', () => {
+  it('defaults schemaVersion to 4.0 when missing', () => {
     const obj = JSON.parse(validManifestJson());
     delete obj.schemaVersion;
-    expect(() => parseManifest(JSON.stringify(obj))).toThrow(PackageValidationError);
-    expect(() => parseManifest(JSON.stringify(obj))).toThrow('schemaVersion');
+    const result = parseManifest(JSON.stringify(obj));
+    expect(result.schemaVersion).toBe('4.0');
+  });
+
+  it('defaults packageType to library when missing', () => {
+    const obj = JSON.parse(validManifestJson());
+    delete obj.packageType;
+    const result = parseManifest(JSON.stringify(obj));
+    expect(result.packageType).toBe('library');
   });
 
   it('throws when schemaVersion is wrong (e.g., "3.0")', () => {

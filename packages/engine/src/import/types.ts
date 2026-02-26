@@ -25,11 +25,11 @@ export interface ManifestFileEntry {
  */
 export interface ManifestSchema {
   packageVersion: string;
-  packageType: 'runtime' | 'library';
+  packageType: 'runtime' | 'library';  // Defaulted to 'library' if absent
   workflowName?: string;
   workflowOid?: string;
   workflowVersion?: string;
-  schemaVersion: string;
+  schemaVersion: string;  // Defaulted to '4.0' if absent
   createdAt?: string;
   createdBy?: string;
   files: ManifestFileEntry[];
