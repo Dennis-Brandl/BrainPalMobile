@@ -1,5 +1,5 @@
-// ButtonElement: Form-embedded button (not the main action buttons).
-// Triggers onChange with the button's label value on press.
+// ButtonElement: Form-embedded button that triggers step completion.
+// Calls onButtonPress with the element's outputValue to complete the step.
 
 import React from 'react';
 import { Pressable, Text, StyleSheet } from 'react-native';
@@ -8,12 +8,12 @@ import { typography } from '@brainpal/ui/src/theme/typography';
 import { spacing } from '@brainpal/ui/src/theme/spacing';
 import type { ElementProps } from './types';
 
-export function ButtonElement({ element, onChange }: ElementProps) {
-  const label = element.content?.plainText ?? 'Button';
+export function ButtonElement({ element, onButtonPress }: ElementProps) {
+  const label = element.label ?? element.content?.plainText ?? 'Button';
   const bgColor = element.color ?? colors.primary;
 
   const handlePress = () => {
-    onChange?.(label);
+    onButtonPress?.(element.outputValue ?? '');
   };
 
   return (

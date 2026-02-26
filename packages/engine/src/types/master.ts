@@ -175,10 +175,21 @@ export interface FormElementSpec {
   width: number;
   height: number;
   fontSize?: number;
+  fontWeight?: string;
   color?: string;
   align?: string;
   src?: string;
   options?: FormElementOption[];
+  /** Button display label */
+  label?: string;
+  /** Button output value (e.g., "true"/"false" for Yes/No) */
+  outputValue?: string;
+  /** Form field name for input elements (real packages use this instead of content.plainText) */
+  fieldName?: string;
+  /** Placeholder text for input elements */
+  placeholder?: string;
+  /** Whether this element can be deleted from the form editor */
+  deletable?: boolean;
 }
 
 // ---------------------------------------------------------------------------

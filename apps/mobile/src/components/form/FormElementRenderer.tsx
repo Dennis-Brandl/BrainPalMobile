@@ -27,6 +27,8 @@ export interface FormElementRendererProps {
   formData: Record<string, string>;
   onFormDataChange: (key: string, value: string) => void;
   images?: Map<string, string>;
+  /** Button press handler for step completion */
+  onButtonPress?: (outputValue: string) => void;
 }
 
 /**
@@ -68,9 +70,10 @@ export function FormElementRenderer({
   formData,
   onFormDataChange,
   images,
+  onButtonPress,
 }: FormElementRendererProps) {
-  // Derive form field key and value
-  const fieldKey = element.content?.plainText ?? '';
+  // Derive form field key: prefer fieldName (real packages) over content.plainText
+  const fieldKey = element.fieldName ?? element.content?.plainText ?? '';
   const value = formData[fieldKey];
   const onChange = (newValue: string) => onFormDataChange(fieldKey, newValue);
 
@@ -79,6 +82,7 @@ export function FormElementRenderer({
     value,
     onChange,
     images,
+    onButtonPress,
   };
 
   const type = element.type.toLowerCase();
@@ -91,6 +95,7 @@ export function FormElementRenderer({
       return <HeaderElement {...elementProps} />;
 
     case 'input':
+    case 'textinput':
       return <InputElement {...elementProps} />;
 
     case 'image':

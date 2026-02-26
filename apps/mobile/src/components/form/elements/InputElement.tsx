@@ -8,7 +8,7 @@ import { spacing } from '@brainpal/ui/src/theme/spacing';
 import type { ElementProps } from './types';
 
 export function InputElement({ element, value, onChange }: ElementProps) {
-  const placeholder = element.content?.plainText ?? '';
+  const placeholder = element.placeholder ?? element.content?.plainText ?? '';
 
   return (
     <View style={styles.container}>

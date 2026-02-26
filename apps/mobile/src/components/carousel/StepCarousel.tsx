@@ -20,7 +20,6 @@ import { typography } from '@brainpal/ui/src/theme/typography';
 import { spacing } from '@brainpal/ui/src/theme/spacing';
 import type { ActiveStep } from '../../hooks/useActiveSteps';
 import { FormCanvas } from '../form/FormCanvas';
-import { FormActionButtons } from '../form/FormActionButtons';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -127,7 +126,6 @@ export function StepCarousel({
     ({ item }: ListRenderItemInfo<ActiveStep>) => {
       const stepFormData = formDataMap[item.stepInstanceId] ?? {};
       const isSubmitting = submittingSteps.has(item.stepInstanceId);
-      const isYesNo = item.stepType === 'YES_NO';
 
       return (
         <View style={{ width: SCREEN_WIDTH }}>
@@ -138,7 +136,7 @@ export function StepCarousel({
             </Text>
           </View>
 
-          {/* Form canvas or fallback */}
+          {/* Form canvas with embedded buttons for step completion */}
           {item.formLayout ? (
             <FormCanvas
               layout={item.formLayout}
@@ -147,28 +145,13 @@ export function StepCarousel({
                 handleFormDataChange(item.stepInstanceId, key, value)
               }
               images={images}
-              renderActionButtons={() => (
-                <FormActionButtons
-                  stepType={isYesNo ? 'YES_NO' : 'USER_INTERACTION'}
-                  yesNoConfig={item.stepSpec.yes_no_config}
-                  onSubmit={(outputValue) =>
-                    handleSubmit(item.stepInstanceId, outputValue)
-                  }
-                  disabled={isSubmitting}
-                />
-              )}
+              onButtonPress={isSubmitting ? undefined : (outputValue) =>
+                handleSubmit(item.stepInstanceId, outputValue)
+              }
             />
           ) : (
             <View style={styles.noFormContainer}>
               <Text style={styles.noFormText}>No form layout available</Text>
-              <FormActionButtons
-                stepType={isYesNo ? 'YES_NO' : 'USER_INTERACTION'}
-                yesNoConfig={item.stepSpec.yes_no_config}
-                onSubmit={(outputValue) =>
-                  handleSubmit(item.stepInstanceId, outputValue)
-                }
-                disabled={isSubmitting}
-              />
             </View>
           )}
         </View>

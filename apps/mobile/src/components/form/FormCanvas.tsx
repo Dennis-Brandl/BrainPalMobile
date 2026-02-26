@@ -15,8 +15,8 @@ export interface FormCanvasProps {
   formData: Record<string, string>;
   /** Handler for form input changes */
   onFormDataChange: (key: string, value: string) => void;
-  /** Optional slot for rendering action buttons below the canvas */
-  renderActionButtons?: () => React.ReactNode;
+  /** Button press handler for step completion */
+  onButtonPress?: (outputValue: string) => void;
   /** Image map: filename -> base64 data URI */
   images?: Map<string, string>;
 }
@@ -25,7 +25,7 @@ export function FormCanvas({
   layout,
   formData,
   onFormDataChange,
-  renderActionButtons,
+  onButtonPress,
   images,
 }: FormCanvasProps) {
   const { scale, scaledWidth, scaledHeight } = useCanvasScale(
@@ -80,14 +80,13 @@ export function FormCanvas({
                   formData={formData}
                   onFormDataChange={handleFormDataChange}
                   images={images}
+                  onButtonPress={onButtonPress}
                 />
               </View>
             ))}
           </View>
         </View>
       </View>
-
-      {renderActionButtons?.()}
     </ScrollView>
   );
 }

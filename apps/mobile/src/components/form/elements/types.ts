@@ -11,4 +11,6 @@ export interface ElementProps {
   onChange?: (value: string) => void;
   /** Image map: filename -> base64 data URI */
   images?: Map<string, string>;
+  /** Button press handler for step completion (only used by ButtonElement) */
+  onButtonPress?: (outputValue: string) => void;
 }
