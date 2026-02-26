@@ -9,7 +9,6 @@ import {
   InMemoryMasterEnvironmentRepository,
   InMemoryMasterActionRepository,
   InMemoryImageRepository,
-  InMemoryExecutionLogger,
 } from '../helpers/mock-repositories';
 import type { MasterWorkflowSpecification } from '../../src/types/master';
 import type { MasterEnvironmentLibrary } from '../../src/types/master';
@@ -151,7 +150,6 @@ describe('PackageImporter', () => {
   let environmentRepo: InMemoryMasterEnvironmentRepository;
   let actionRepo: InMemoryMasterActionRepository;
   let imageRepo: InMemoryImageRepository;
-  let logger: InMemoryExecutionLogger;
   let importer: PackageImporter;
 
   beforeEach(() => {
@@ -159,8 +157,7 @@ describe('PackageImporter', () => {
     environmentRepo = new InMemoryMasterEnvironmentRepository();
     actionRepo = new InMemoryMasterActionRepository();
     imageRepo = new InMemoryImageRepository();
-    logger = new InMemoryExecutionLogger();
-    importer = new PackageImporter(workflowRepo, environmentRepo, actionRepo, imageRepo, logger);
+    importer = new PackageImporter(workflowRepo, environmentRepo, actionRepo, imageRepo);
   });
 
   // -------------------------------------------------------------------------
@@ -192,19 +189,13 @@ describe('PackageImporter', () => {
     expect(actions).toHaveLength(1);
   });
 
-  it('records PACKAGE_IMPORTED log entry', async () => {
+  it('returns workflowOids on successful import', async () => {
     const zip = buildRuntimePackageZip({ workflowOid: 'wf-001' });
 
-    await importer.importPackage(zip);
+    const result = await importer.importPackage(zip);
 
-    const allLogs = logger.getAll();
-    expect(allLogs).toHaveLength(1);
-    expect(allLogs[0].event_type).toBe('PACKAGE_IMPORTED');
-
-    const eventData = JSON.parse(allLogs[0].event_data_json);
-    expect(eventData.packageType).toBe('runtime');
-    expect(eventData.workflowOids).toEqual(['wf-001']);
-    expect(eventData.workflowCount).toBe(1);
+    expect(result.success).toBe(true);
+    expect(result.workflowOids).toEqual(['wf-001']);
   });
 
   // -------------------------------------------------------------------------

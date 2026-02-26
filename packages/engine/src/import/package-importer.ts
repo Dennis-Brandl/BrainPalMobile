@@ -7,7 +7,6 @@ import type {
   IMasterActionRepository,
   IImageRepository,
 } from '../interfaces/storage';
-import type { IExecutionLogger } from '../interfaces/logger';
 import type { ImportResult, ExtractedPackage } from './types';
 import { PackageValidationError } from './types';
 import { extractPackage } from './package-extractor';
@@ -30,7 +29,6 @@ export class PackageImporter {
     private readonly environmentRepo: IMasterEnvironmentRepository,
     private readonly actionRepo: IMasterActionRepository,
     private readonly imageRepo: IImageRepository,
-    private readonly logger: IExecutionLogger,
   ) {}
 
   /**
@@ -92,21 +90,6 @@ export class PackageImporter {
         data: image.data,
       });
     }
-
-    // Log the import event
-    await this.logger.log({
-      workflow_instance_id: '',
-      event_type: 'PACKAGE_IMPORTED',
-      event_data_json: JSON.stringify({
-        packageType: extracted.manifest.packageType,
-        workflowOids,
-        workflowCount: extracted.workflows.length,
-        environmentCount: extracted.environments.length,
-        actionCount: extracted.actions.length,
-        imageCount: extracted.images.length,
-      }),
-      timestamp: new Date().toISOString(),
-    });
 
     return { success: true, workflowOids };
   }

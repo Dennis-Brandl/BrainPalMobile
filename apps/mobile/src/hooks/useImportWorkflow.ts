@@ -12,7 +12,6 @@ import {
   SqliteMasterEnvironmentRepository,
   SqliteMasterActionRepository,
   SqliteImageRepository,
-  SqliteExecutionLoggerRepository,
 } from '../repositories';
 import { useWorkflowStore } from '../stores/workflow-store';
 
@@ -64,14 +63,12 @@ export function useImportWorkflow(): UseImportWorkflowResult {
         const environmentRepo = new SqliteMasterEnvironmentRepository(db);
         const actionRepo = new SqliteMasterActionRepository(db);
         const imageRepo = new SqliteImageRepository(db);
-        const logger = new SqliteExecutionLoggerRepository(db);
 
         const importer = new PackageImporter(
           workflowRepo,
           environmentRepo,
           actionRepo,
           imageRepo,
-          logger,
         );
 
         const result = await importer.importPackage(zipData);
