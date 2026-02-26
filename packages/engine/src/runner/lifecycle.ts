@@ -8,6 +8,7 @@ import type {
   WorkflowConnection,
 } from '../types/runtime';
 import type { IIdGenerator } from '../interfaces/id-generator';
+import { SPEC_STEP_TYPE_MAP, type StepType } from '../types/common';
 import type {
   IWorkflowRepository,
   IValuePropertyRepository,
@@ -64,15 +65,17 @@ export function createRuntimeWorkflow(
   };
 
   // Create RuntimeWorkflowStep for each step in the spec
-  const steps: RuntimeWorkflowStep[] = specCopy.steps.map((masterStep) => {
+  const steps: RuntimeWorkflowStep[] = (specCopy.steps ?? []).map((masterStep) => {
     const stepInstanceId = idGenerator.generateId();
+    // Normalize step_type: real packages may use spaces ("WAIT ALL") instead of underscores ("WAIT_ALL")
+    const normalizedType = SPEC_STEP_TYPE_MAP[masterStep.step_type] ?? masterStep.step_type as StepType;
     return {
       instance_id: stepInstanceId,
       workflow_instance_id: workflowInstanceId,
       step_oid: masterStep.oid,
-      step_type: masterStep.step_type,
+      step_type: normalizedType,
       step_state: 'IDLE',
-      step_json: JSON.stringify(masterStep),
+      step_json: JSON.stringify({ ...masterStep, step_type: normalizedType }),
       resolved_inputs_json: null,
       resolved_outputs_json: null,
       user_inputs_json: null,
@@ -84,7 +87,7 @@ export function createRuntimeWorkflow(
   });
 
   // Create WorkflowConnection array from spec connections
-  const connections: WorkflowConnection[] = specCopy.connections.map((conn) => ({
+  const connections: WorkflowConnection[] = (specCopy.connections ?? []).map((conn) => ({
     workflow_instance_id: workflowInstanceId,
     from_step_oid: conn.from_step_id,
     to_step_oid: conn.to_step_id,

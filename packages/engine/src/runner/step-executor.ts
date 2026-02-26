@@ -65,7 +65,7 @@ export async function executeStartingPhase(
   const { step, masterStep, stateMachine, parameterResolver, eventBus, executionLogger, stepRepo, workflowInstanceId } = ctx;
 
   // Resolve input parameters
-  if (masterStep.input_parameter_specifications.length > 0) {
+  if (masterStep.input_parameter_specifications?.length > 0) {
     const result = await parameterResolver.resolveInputs(
       workflowInstanceId,
       masterStep.input_parameter_specifications,
@@ -265,38 +265,39 @@ export async function executeExecutingPhase(
       const parentSpec = JSON.parse(parentWorkflow.specification_json) as MasterWorkflowSpecification;
 
       // Resolve which child workflow this WORKFLOW_PROXY step invokes
+      const childWorkflows = parentSpec.child_workflows ?? [];
       let childSpec: MasterWorkflowSpecification | undefined;
 
-      if (parentSpec.child_workflows.length === 1) {
+      if (childWorkflows.length === 1) {
         // Single child -- use directly (most common case)
-        childSpec = parentSpec.child_workflows[0];
-      } else if (parentSpec.child_workflows.length > 1) {
+        childSpec = childWorkflows[0];
+      } else if (childWorkflows.length > 1) {
         // Try matching step description against child local_id
         const stepDesc = (masterStep.description ?? '').trim().toLowerCase();
-        childSpec = parentSpec.child_workflows.find(
+        childSpec = childWorkflows.find(
           (cw) => cw.local_id.trim().toLowerCase() === stepDesc,
         );
 
         // Try matching step local_id against child local_id
         if (!childSpec) {
           const stepLocalId = masterStep.local_id.trim().toLowerCase();
-          childSpec = parentSpec.child_workflows.find(
+          childSpec = childWorkflows.find(
             (cw) => cw.local_id.trim().toLowerCase() === stepLocalId,
           );
         }
 
         // Positional fallback: find this step's index among all WORKFLOW_PROXY steps
         if (!childSpec) {
-          const proxySteps = parentSpec.steps.filter((s) => s.step_type === 'WORKFLOW_PROXY');
+          const proxySteps = (parentSpec.steps ?? []).filter((s) => s.step_type === 'WORKFLOW_PROXY');
           const proxyIndex = proxySteps.findIndex((s) => s.oid === step.step_oid);
-          if (proxyIndex >= 0 && proxyIndex < parentSpec.child_workflows.length) {
-            childSpec = parentSpec.child_workflows[proxyIndex];
+          if (proxyIndex >= 0 && proxyIndex < childWorkflows.length) {
+            childSpec = childWorkflows[proxyIndex];
           }
         }
       }
 
       if (!childSpec) {
-        const available = parentSpec.child_workflows.map((cw) => cw.local_id).join(', ');
+        const available = childWorkflows.map((cw) => cw.local_id).join(', ');
         throw new Error(
           `WORKFLOW_PROXY step ${step.step_oid} could not match a child workflow. ` +
           `Available child workflows: [${available}]`,
@@ -350,7 +351,7 @@ export async function executeCompletingPhase(
   const { step, masterStep, stateMachine, parameterResolver, eventBus, executionLogger, stepRepo, workflowInstanceId } = ctx;
 
   // Write output parameters
-  if (masterStep.output_parameter_specifications.length > 0) {
+  if (masterStep.output_parameter_specifications?.length > 0) {
     // Build resolved values map from user inputs or resolved inputs
     const resolvedValues = new Map<string, string>();
 

@@ -89,7 +89,7 @@ export class WorkflowRunner implements IWorkflowRunnerForProxy {
     await this.config.connectionRepo.saveMany(workflow.instance_id, connections);
 
     // Initialize Value Properties from spec defaults
-    if (masterSpec.value_property_specifications.length > 0) {
+    if (masterSpec.value_property_specifications?.length > 0) {
       await this.config.valuePropertyRepo.initializeFromSpec(
         'workflow',
         workflow.instance_id,
@@ -98,7 +98,7 @@ export class WorkflowRunner implements IWorkflowRunnerForProxy {
     }
 
     // Initialize resource pools
-    if (masterSpec.resource_property_specifications.length > 0) {
+    if (masterSpec.resource_property_specifications?.length > 0) {
       await this.resourceManager.initializePools(
         'workflow',
         workflow.instance_id,
