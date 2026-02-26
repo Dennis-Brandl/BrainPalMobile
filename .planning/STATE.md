@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 Phase: 3 of 5 (Execution UI)
 Plan: 4 of 4 in current phase
 Status: Phase 3 verified (UAT complete, quick fix applied)
-Last activity: 2026-02-25 -- Completed quick task 001: EventBus race condition fix
+Last activity: 2026-02-25 -- Completed quick task 002: INSERT OR REPLACE cascade deletion fix
 
 Progress: [############........] 12/12 Plans (3/5 Phases complete)
 
@@ -108,9 +108,10 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 001 | Wire engine EventBus to execution store (race condition fix) | 2026-02-25 | a10a55a | [001-wire-engine-eventbus-to-execution-store](./quick/001-wire-engine-eventbus-to-execution-store/) |
+| 002 | Fix INSERT OR REPLACE cascade deletion of steps/connections | 2026-02-25 | 3f9990c | inline fix (no plan needed) |
 
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Phase 3 UAT complete, quick task 001 applied. Ready for Phase 4.
+Stopped at: Phase 3 UAT complete (11/13 pass, 2 skipped), all gaps resolved. Ready for Phase 4.
 Resume file: None

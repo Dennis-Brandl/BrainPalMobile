@@ -32,7 +32,7 @@ note: "Original NOT NULL constraint error fixed by commit dd0511d (seed camelCas
 ### 6. Active workflow appears with state badge
 expected: After starting execution, going back to Home and tapping "Active" shows the running workflow with a color-coded ISA-88 state badge (blue for RUNNING, amber for PAUSED, etc.).
 result: pass
-note: "Workflows appear with badges. Badge shows IDLE (gray) instead of expected RUNNING — engine event propagation gap logged."
+note: "Workflows appear with RUNNING (blue) badge after race condition fix (a10a55a) and cascade deletion fix (3f9990c)."
 
 ### 7. Execution screen renders WYSIWYG form
 expected: On the execution screen, the active user interaction step displays form elements (text, inputs, checkboxes, etc.) positioned on a scaled canvas matching the BrainPal MD layout.
@@ -65,37 +65,36 @@ note: "Original infinite re-render loop fixed by commit cdb11da (stable EMPTY_ID
 
 ### 13. Terminal state auto-navigation
 expected: When a workflow reaches COMPLETED, ABORTED, or STOPPED, the execution screen shows the terminal state briefly then navigates back to the home screen after ~2 seconds.
-result: skipped
-note: "Depends on execution store receiving terminal state from engine events. Blocked by event propagation gap."
+result: pass
+note: "Sample Workflow (START→END) auto-completes instantly; execution screen shows COMPLETED briefly then navigates back. Fixed by cascade deletion fix (3f9990c) + workflow removal handling."
 
 ## Summary
 
 total: 13
-passed: 9
+passed: 11
 issues: 0
 pending: 0
-skipped: 4
+skipped: 2
 
 ## Fixes Applied During Testing
 
 1. **commit dd0511d** - fix(seed): snake_case property names in seed JSON matching engine interfaces
 2. **commit cdb11da** - fix(execution): stable empty array ref preventing infinite re-render loop
+3. **commit a10a55a** - fix(execution): reorder store setup before startWorkflow to fix race condition
+4. **commit 3f9990c** - fix(repos): INSERT OR REPLACE → ON CONFLICT DO UPDATE to prevent cascade deletion of steps/connections
 
 ## Gaps
 
 - truth: "Engine events propagate workflow state changes to execution store"
-  status: open
-  reason: "Execution store shows IDLE after startWorkflow; engine events not wired to Zustand store updates"
+  status: resolved
+  reason: "Two bugs: (1) race condition — addActiveWorkflow called after startWorkflow so events were dropped (fix: a10a55a), (2) INSERT OR REPLACE + ON DELETE CASCADE silently deleted runtime_steps when workflowRepo.save() re-saved the workflow during startWorkflow (fix: 3f9990c)"
   severity: major
   test: 5, 6, 13
-  root_cause: "EngineProvider does not subscribe to engine event bus to update execution store"
-  artifacts: [apps/mobile/src/stores/execution-store.ts, apps/mobile/src/providers/EngineProvider.tsx]
-  note: "This single gap causes cascading failures: wrong state badges, no terminal auto-navigation, limited state controls menu options. Fix requires wiring engine EventBus emissions to execution store actions."
+  root_cause: "INSERT OR REPLACE in SQLite does DELETE+INSERT; with PRAGMA foreign_keys=ON and ON DELETE CASCADE on runtime_steps, this cascade-deleted all steps when the workflow was re-saved"
+  artifacts: [apps/mobile/src/repositories/workflow-repository.ts, apps/mobile/src/repositories/step-repository.ts]
 
 - truth: "Terminal workflow states auto-navigate back after 2s"
-  status: blocked
-  reason: "Depends on engine event propagation gap being fixed first"
-  severity: major
+  status: resolved
+  reason: "Fixed by cascade deletion fix (3f9990c) + execution screen handling workflow removal from store"
   test: 13
-  root_cause: "Execution screen watches workflowState from store, which never updates to COMPLETED"
   artifacts: [apps/mobile/app/execution/[instanceId].tsx]
