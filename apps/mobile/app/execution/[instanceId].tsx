@@ -136,6 +136,13 @@ export default function ExecutionScreen() {
   // -----------------------------------------------------------------------
 
   useEffect(() => {
+    if (!workflow) {
+      // Workflow removed from store (cleanup after terminal state) -- go back now
+      if (router.canGoBack()) {
+        router.back();
+      }
+      return;
+    }
     if (TERMINAL_STATES.has(workflowState)) {
       const timeout = setTimeout(() => {
         if (router.canGoBack()) {
@@ -144,7 +151,7 @@ export default function ExecutionScreen() {
       }, 2000);
       return () => clearTimeout(timeout);
     }
-  }, [workflowState, router]);
+  }, [workflow, workflowState, router]);
 
   // -----------------------------------------------------------------------
   // Event handlers

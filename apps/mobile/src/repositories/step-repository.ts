@@ -50,11 +50,20 @@ export class SqliteStepRepository implements IStepRepository {
 
   async save(step: RuntimeWorkflowStep): Promise<void> {
     await this.db.runAsync(
-      `INSERT OR REPLACE INTO runtime_steps
+      `INSERT INTO runtime_steps
         (instance_id, workflow_instance_id, step_oid, step_type, step_state,
          step_json, resolved_inputs_json, resolved_outputs_json, user_inputs_json,
          activated_at, started_at, completed_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(instance_id) DO UPDATE SET
+         step_state = excluded.step_state,
+         step_json = excluded.step_json,
+         resolved_inputs_json = excluded.resolved_inputs_json,
+         resolved_outputs_json = excluded.resolved_outputs_json,
+         user_inputs_json = excluded.user_inputs_json,
+         activated_at = excluded.activated_at,
+         started_at = excluded.started_at,
+         completed_at = excluded.completed_at`,
       [
         step.instance_id,
         step.workflow_instance_id,

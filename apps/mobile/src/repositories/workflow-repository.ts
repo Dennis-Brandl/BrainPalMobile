@@ -34,11 +34,19 @@ export class SqliteWorkflowRepository implements IWorkflowRepository {
 
   async save(workflow: RuntimeWorkflow): Promise<void> {
     await this.db.runAsync(
-      `INSERT OR REPLACE INTO runtime_workflows
+      `INSERT INTO runtime_workflows
         (instance_id, master_workflow_oid, master_workflow_version, workflow_state,
          specification_json, created_at, started_at, completed_at, last_activity_at,
          parent_workflow_instance_id, parent_step_oid)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(instance_id) DO UPDATE SET
+         workflow_state = excluded.workflow_state,
+         specification_json = excluded.specification_json,
+         started_at = excluded.started_at,
+         completed_at = excluded.completed_at,
+         last_activity_at = excluded.last_activity_at,
+         parent_workflow_instance_id = excluded.parent_workflow_instance_id,
+         parent_step_oid = excluded.parent_step_oid`,
       [
         workflow.instance_id,
         workflow.master_workflow_oid,
