@@ -116,23 +116,20 @@ export default function ExecutionScreen() {
   const prevStepsRef = useRef(activeSteps);
 
   useEffect(() => {
-    const prevSteps = prevStepsRef.current;
     prevStepsRef.current = activeSteps;
 
     if (activeSteps.length === 0) {
-      setCurrentStepIndex(0);
-      return;
-    }
-
-    // If the current step is still in the list, keep its index
-    if (currentStepIndex < activeSteps.length) {
+      setCurrentStepIndex((prev) => (prev === 0 ? prev : 0));
       return;
     }
 
     // Current index is out of bounds -- step was removed.
     // Try to stay at the same position or go to last.
-    setCurrentStepIndex(Math.min(currentStepIndex, activeSteps.length - 1));
-  }, [activeSteps, currentStepIndex]);
+    setCurrentStepIndex((prev) => {
+      if (prev < activeSteps.length) return prev;
+      return Math.min(prev, activeSteps.length - 1);
+    });
+  }, [activeSteps]);
 
   // -----------------------------------------------------------------------
   // Handle terminal workflow state: navigate back after brief delay

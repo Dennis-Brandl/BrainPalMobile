@@ -66,13 +66,16 @@ function selectFormLayout(
 // Hook
 // ---------------------------------------------------------------------------
 
+const EMPTY_IDS: string[] = [];
+
 export function useActiveSteps(workflowInstanceId: string): UseActiveStepsResult {
   const db = useSQLiteContext();
   const deviceType = useDeviceType();
 
   // Subscribe to the specific workflow's active step instance IDs
+  // Use stable empty array to prevent infinite re-render loops
   const activeStepInstanceIds = useExecutionStore(
-    (s) => s.activeWorkflows[workflowInstanceId]?.activeStepInstanceIds ?? [],
+    (s) => s.activeWorkflows[workflowInstanceId]?.activeStepInstanceIds ?? EMPTY_IDS,
   );
 
   const [stepRows, setStepRows] = useState<RuntimeStepRow[]>([]);
