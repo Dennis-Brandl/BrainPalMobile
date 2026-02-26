@@ -30,6 +30,7 @@ function formatDate(iso: string | null): string {
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    second: '2-digit',
   });
 }
 
@@ -70,7 +71,9 @@ export default function HistoryScreen() {
             <Text style={styles.cardName} numberOfLines={1}>
               {item.name}
             </Text>
-            <Text style={styles.cardDate}>{formatDate(item.startedAt)}</Text>
+            <Text style={styles.cardDate}>
+              {formatDate(item.startedAt)}  {'\u00B7'}  {item.instanceId.slice(0, 8)}
+            </Text>
           </View>
           <View style={styles.cardRight}>
             <StateBadge state={item.state} size="small" />
