@@ -314,8 +314,9 @@ export async function executeExecutingPhase(
       ctx.step.child_workflow_instance_id = childInstanceId;
       await ctx.stepRepo.save(ctx.step);
 
-      // Start the child workflow
-      await ctx.runner.startWorkflow(childInstanceId);
+      // Start the child workflow using direct activation (bypasses event queue
+      // to avoid deadlock -- we are already inside the event queue handler)
+      await ctx.runner.startChildWorkflowDirect(childInstanceId);
 
       // Return false -- parent step stays in EXECUTING while child runs
       return false;

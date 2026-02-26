@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { WorkflowRunner } from '../../src/runner/workflow-runner';
 import type { RunnerConfig } from '../../src/runner/types';
 import type { EngineEventMap } from '../../src/types/events';
-import { makeLinearWorkflow, makeParallelWorkflow, makeSelect1Workflow } from '../helpers/fixtures';
+import { makeLinearWorkflow, makeParallelWorkflow, makeSelect1Workflow, makeWorkflowProxyWorkflow, CHILD_WORKFLOW_STEP_OIDS } from '../helpers/fixtures';
 import { createTestContext, waitForEvent } from '../helpers/test-utils';
 
 function buildRunnerConfig(ctx: ReturnType<typeof createTestContext>): RunnerConfig {
@@ -451,6 +451,117 @@ describe('WorkflowRunner', () => {
 
       const workflow = await ctx.workflowRepo.getById(wfId);
       expect(workflow?.workflow_state).toBe('COMPLETED');
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Test 8: WORKFLOW_PROXY execution
+  // -----------------------------------------------------------------------
+  describe('WORKFLOW_PROXY execution', () => {
+    it('creates child workflow and completes parent on child completion', async () => {
+      const spec = makeWorkflowProxyWorkflow();
+      const parentWfId = await runner.createWorkflow(spec);
+      await runner.startWorkflow(parentWfId);
+
+      // After starting, START auto-completes, WORKFLOW_PROXY enters EXECUTING.
+      // The child workflow is created and started, reaching its USER_INTERACTION step.
+      const parentSteps = await ctx.stepRepo.getByWorkflow(parentWfId);
+      const proxyStep = parentSteps.find((s) => s.step_type === 'WORKFLOW_PROXY')!;
+      expect(proxyStep.step_state).toBe('EXECUTING');
+      expect(proxyStep.child_workflow_instance_id).not.toBeNull();
+
+      // Verify child workflow was created with parent references
+      const childWfId = proxyStep.child_workflow_instance_id!;
+      const childWorkflow = await ctx.workflowRepo.getById(childWfId);
+      expect(childWorkflow).not.toBeNull();
+      expect(childWorkflow!.parent_workflow_instance_id).toBe(parentWfId);
+      expect(childWorkflow!.parent_step_oid).toBe('step-proxy');
+      expect(childWorkflow!.workflow_state).toBe('RUNNING');
+
+      // Find the child workflow's USER_INTERACTION step
+      const childSteps = await ctx.stepRepo.getByWorkflow(childWfId);
+      const childUiStep = childSteps.find((s) => s.step_oid === CHILD_WORKFLOW_STEP_OIDS.userInteraction)!;
+      expect(childUiStep.step_state).toBe('EXECUTING');
+
+      // Submit user input for the child's USER_INTERACTION step
+      await runner.submitUserInput(childUiStep.instance_id, { 'child-input': 'child data' });
+
+      // Verify child workflow is COMPLETED
+      const childWorkflowAfter = await ctx.workflowRepo.getById(childWfId);
+      expect(childWorkflowAfter!.workflow_state).toBe('COMPLETED');
+
+      // Verify parent WORKFLOW_PROXY step is now COMPLETED
+      const proxyStepAfter = await ctx.stepRepo.getById(proxyStep.instance_id);
+      expect(proxyStepAfter!.step_state).toBe('COMPLETED');
+
+      // Verify parent END step ran and parent workflow is COMPLETED
+      const parentStepsAfter = await ctx.stepRepo.getByWorkflow(parentWfId);
+      const parentEnd = parentStepsAfter.find((s) => s.step_type === 'END')!;
+      expect(parentEnd.step_state).toBe('COMPLETED');
+
+      const parentWorkflow = await ctx.workflowRepo.getById(parentWfId);
+      expect(parentWorkflow!.workflow_state).toBe('COMPLETED');
+    });
+
+    it('propagates pause to child workflow and resume back', async () => {
+      const spec = makeWorkflowProxyWorkflow();
+      const parentWfId = await runner.createWorkflow(spec);
+      await runner.startWorkflow(parentWfId);
+
+      // Child should be running with USER_INTERACTION in EXECUTING
+      const parentSteps = await ctx.stepRepo.getByWorkflow(parentWfId);
+      const proxyStep = parentSteps.find((s) => s.step_type === 'WORKFLOW_PROXY')!;
+      const childWfId = proxyStep.child_workflow_instance_id!;
+
+      // Verify child is running
+      const childWorkflow = await ctx.workflowRepo.getById(childWfId);
+      expect(childWorkflow!.workflow_state).toBe('RUNNING');
+
+      // Pause parent
+      await runner.pauseWorkflow(parentWfId);
+
+      // Verify child workflow is PAUSED
+      const childWorkflowPaused = await ctx.workflowRepo.getById(childWfId);
+      expect(childWorkflowPaused!.workflow_state).toBe('PAUSED');
+
+      // Verify child USER_INTERACTION step is PAUSED
+      const childStepsPaused = await ctx.stepRepo.getByWorkflow(childWfId);
+      const childUiPaused = childStepsPaused.find((s) => s.step_oid === CHILD_WORKFLOW_STEP_OIDS.userInteraction)!;
+      expect(childUiPaused.step_state).toBe('PAUSED');
+
+      // Resume parent
+      await runner.resumeWorkflow(parentWfId);
+
+      // Verify child workflow is RUNNING again
+      const childWorkflowResumed = await ctx.workflowRepo.getById(childWfId);
+      expect(childWorkflowResumed!.workflow_state).toBe('RUNNING');
+
+      // Verify child USER_INTERACTION step is EXECUTING again
+      const childStepsResumed = await ctx.stepRepo.getByWorkflow(childWfId);
+      const childUiResumed = childStepsResumed.find((s) => s.step_oid === CHILD_WORKFLOW_STEP_OIDS.userInteraction)!;
+      expect(childUiResumed.step_state).toBe('EXECUTING');
+    });
+
+    it('propagates abort to child workflow', async () => {
+      const spec = makeWorkflowProxyWorkflow();
+      const parentWfId = await runner.createWorkflow(spec);
+      await runner.startWorkflow(parentWfId);
+
+      // Get child workflow ID
+      const parentSteps = await ctx.stepRepo.getByWorkflow(parentWfId);
+      const proxyStep = parentSteps.find((s) => s.step_type === 'WORKFLOW_PROXY')!;
+      const childWfId = proxyStep.child_workflow_instance_id!;
+
+      // Abort parent
+      await runner.abort(parentWfId);
+
+      // Verify child workflow is ABORTED
+      const childWorkflowAborted = await ctx.workflowRepo.getById(childWfId);
+      expect(childWorkflowAborted!.workflow_state).toBe('ABORTED');
+
+      // Verify parent workflow is ABORTED
+      const parentWorkflow = await ctx.workflowRepo.getById(parentWfId);
+      expect(parentWorkflow!.workflow_state).toBe('ABORTED');
     });
   });
 });

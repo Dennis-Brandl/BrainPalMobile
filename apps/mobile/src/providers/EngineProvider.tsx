@@ -80,6 +80,8 @@ export function EngineProvider({ children }: PropsWithChildren) {
   const runnerRef = useRef<WorkflowRunner | null>(null);
   const configRef = useRef<RunnerConfig | null>(null);
   const notificationServiceRef = useRef<NotificationService | null>(null);
+  // Cache for resolving child workflow IDs to root parent workflow IDs
+  const parentCacheRef = useRef(new Map<string, string | null>());
 
   // Initialize on first render only
   if (!eventBusRef.current) {
@@ -124,6 +126,25 @@ export function EngineProvider({ children }: PropsWithChildren) {
     const runner = runnerRef.current!;
     const store = useExecutionStore.getState();
     const unsubscribers: Array<() => void> = [];
+    const parentCache = parentCacheRef.current;
+
+    // Helper: resolve a workflow instance ID to the root parent workflow ID.
+    // Child workflow step events need to be attributed to the root parent for the carousel.
+    async function resolveRootWorkflowId(workflowInstanceId: string): Promise<string> {
+      if (parentCache.has(workflowInstanceId)) {
+        return parentCache.get(workflowInstanceId) ?? workflowInstanceId;
+      }
+      const wf = await config.workflowRepo.getById(workflowInstanceId);
+      if (wf?.parent_workflow_instance_id) {
+        // Walk up the chain to find root
+        const rootId = await resolveRootWorkflowId(wf.parent_workflow_instance_id);
+        parentCache.set(workflowInstanceId, rootId);
+        return rootId;
+      }
+      // This is a root workflow
+      parentCache.set(workflowInstanceId, null);
+      return workflowInstanceId;
+    }
 
     // Subscribe to workflow lifecycle events
     unsubscribers.push(
@@ -134,11 +155,25 @@ export function EngineProvider({ children }: PropsWithChildren) {
 
     unsubscribers.push(
       eventBus.on('WORKFLOW_COMPLETED', ({ workflowInstanceId }) => {
-        useExecutionStore.getState().updateWorkflowState(workflowInstanceId, 'COMPLETED');
-        // Remove after short delay so UI can show completion
-        setTimeout(() => {
-          useExecutionStore.getState().removeActiveWorkflow(workflowInstanceId);
-        }, 2000);
+        // Check if this is a child workflow -- if so, do NOT remove from active workflows
+        // (the parent workflow is still running and is the one shown in the carousel)
+        const cachedParent = parentCache.get(workflowInstanceId);
+        if (cachedParent !== undefined && cachedParent !== null) {
+          // This is a child workflow completing -- skip UI cleanup
+          return;
+        }
+        // Check async if not cached yet (race edge case)
+        config.workflowRepo.getById(workflowInstanceId).then((wf) => {
+          if (wf?.parent_workflow_instance_id) {
+            parentCache.set(workflowInstanceId, wf.parent_workflow_instance_id);
+            return; // Child workflow -- skip
+          }
+          useExecutionStore.getState().updateWorkflowState(workflowInstanceId, 'COMPLETED');
+          // Remove after short delay so UI can show completion
+          setTimeout(() => {
+            useExecutionStore.getState().removeActiveWorkflow(workflowInstanceId);
+          }, 2000);
+        });
       }),
     );
 
@@ -160,35 +195,41 @@ export function EngineProvider({ children }: PropsWithChildren) {
       }),
     );
 
-    // Subscribe to step state changes and derive active steps
+    // Subscribe to step state changes and derive active steps.
+    // Child workflow steps are mapped to the root parent workflow ID
+    // so they appear in the parent's carousel (seamless inline display).
     unsubscribers.push(
       eventBus.on('STEP_STATE_CHANGED', (data) => {
         const { stepInstanceId, workflowInstanceId, stepOid, toState } = data;
-        const execStore = useExecutionStore.getState();
-        execStore.updateStepState(workflowInstanceId, stepOid, toState);
 
-        if (toState === 'EXECUTING') {
-          // Check step type to determine if this is a user-facing step
-          const cachedType = execStore.getStepType(stepInstanceId);
-          if (cachedType) {
-            if (cachedType === 'USER_INTERACTION' || cachedType === 'YES_NO') {
-              execStore.addActiveStep(workflowInstanceId, stepInstanceId);
-            }
-          } else {
-            // Query step type from DB and cache it
-            config.stepRepo.getById(stepInstanceId).then((step) => {
-              if (step) {
-                const currentStore = useExecutionStore.getState();
-                currentStore.cacheStepType(stepInstanceId, step.step_type);
-                if (step.step_type === 'USER_INTERACTION' || step.step_type === 'YES_NO') {
-                  currentStore.addActiveStep(workflowInstanceId, stepInstanceId);
-                }
+        // Resolve the root workflow ID for the step (handles child->parent mapping)
+        resolveRootWorkflowId(workflowInstanceId).then((rootId) => {
+          const execStore = useExecutionStore.getState();
+          execStore.updateStepState(rootId, stepOid, toState);
+
+          if (toState === 'EXECUTING') {
+            // Check step type to determine if this is a user-facing step
+            const cachedType = execStore.getStepType(stepInstanceId);
+            if (cachedType) {
+              if (cachedType === 'USER_INTERACTION' || cachedType === 'YES_NO') {
+                execStore.addActiveStep(rootId, stepInstanceId);
               }
-            });
+            } else {
+              // Query step type from DB and cache it
+              config.stepRepo.getById(stepInstanceId).then((step) => {
+                if (step) {
+                  const currentStore = useExecutionStore.getState();
+                  currentStore.cacheStepType(stepInstanceId, step.step_type);
+                  if (step.step_type === 'USER_INTERACTION' || step.step_type === 'YES_NO') {
+                    currentStore.addActiveStep(rootId, stepInstanceId);
+                  }
+                }
+              });
+            }
+          } else if (NON_ACTIVE_STEP_STATES.has(toState)) {
+            execStore.removeActiveStep(rootId, stepInstanceId);
           }
-        } else if (NON_ACTIVE_STEP_STATES.has(toState)) {
-          execStore.removeActiveStep(workflowInstanceId, stepInstanceId);
-        }
+        });
       }),
     );
 
@@ -283,6 +324,15 @@ export function EngineProvider({ children }: PropsWithChildren) {
             stepInstanceIdToOid,
           };
           runner.restoreWorkflowState(runnerState);
+
+          // Pre-populate parent cache for all recovered workflows
+          if (workflow.parent_workflow_instance_id !== null) {
+            parentCache.set(workflowId, workflow.parent_workflow_instance_id);
+            // This is a child workflow -- restore into runner state but
+            // do NOT add to UI activeWorkflows (parent is the carousel entry)
+            continue;
+          }
+          parentCache.set(workflowId, null);
 
           // Parse spec for workflow name
           let name = 'Workflow';

@@ -89,5 +89,9 @@ export interface IWorkflowRunnerForProxy {
     parentWorkflowInstanceId: string,
     parentStepOid: string,
   ): Promise<string>;
-  startWorkflow(workflowInstanceId: string): Promise<void>;
+  /**
+   * Start a child workflow using direct activation (not via event queue).
+   * This is critical when called from within an event queue handler to avoid deadlock.
+   */
+  startChildWorkflowDirect(workflowInstanceId: string): Promise<void>;
 }

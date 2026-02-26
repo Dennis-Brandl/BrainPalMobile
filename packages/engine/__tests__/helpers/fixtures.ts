@@ -264,3 +264,103 @@ export function makeSelect1Workflow(branchCount: number): MasterWorkflowSpecific
     child_workflows: [],
   };
 }
+
+// ---------------------------------------------------------------------------
+// makeWorkflowProxyWorkflow
+// ---------------------------------------------------------------------------
+
+/**
+ * OIDs for the child workflow's steps (exported for test assertions).
+ */
+export const CHILD_WORKFLOW_STEP_OIDS = {
+  start: 'child-step-start',
+  userInteraction: 'child-step-ui',
+  end: 'child-step-end',
+} as const;
+
+/**
+ * Creates a parent workflow with a WORKFLOW_PROXY step that invokes a child:
+ *
+ * Parent: START -> WORKFLOW_PROXY -> END
+ * Child:  START -> USER_INTERACTION -> END
+ *
+ * The WORKFLOW_PROXY step's description matches the child's local_id
+ * for the matching strategy.
+ */
+export function makeWorkflowProxyWorkflow(): MasterWorkflowSpecification {
+  // Build child workflow spec
+  const childUiStep = makeStep(
+    CHILD_WORKFLOW_STEP_OIDS.userInteraction,
+    'Child User Step',
+    'USER_INTERACTION',
+    100,
+    150,
+  );
+  childUiStep.ui_parameter_specifications = [
+    {
+      id: 'child-input',
+      label: 'Child Input',
+      ui_type: 'text',
+      required: true,
+      default_value: '',
+      value_type: 'literal',
+    },
+  ];
+
+  const childSpec: MasterWorkflowSpecification = {
+    local_id: 'Child Workflow',
+    oid: 'wf-child',
+    version: '1.0.0',
+    last_modified_date: '2026-01-01T00:00:00Z',
+    schemaVersion: '4.0',
+    steps: [
+      makeStep(CHILD_WORKFLOW_STEP_OIDS.start, 'Start', 'START', 100, 0),
+      childUiStep,
+      makeStep(CHILD_WORKFLOW_STEP_OIDS.end, 'End', 'END', 100, 300),
+    ],
+    connections: [
+      { from_step_id: CHILD_WORKFLOW_STEP_OIDS.start, to_step_id: CHILD_WORKFLOW_STEP_OIDS.userInteraction, connection_id: 'child-conn-1' },
+      { from_step_id: CHILD_WORKFLOW_STEP_OIDS.userInteraction, to_step_id: CHILD_WORKFLOW_STEP_OIDS.end, connection_id: 'child-conn-2' },
+    ],
+    viewport: { x: 0, y: 0, zoom: 1 },
+    starting_parameter_specifications: [],
+    output_parameter_specifications: [],
+    value_property_specifications: [],
+    resource_property_specifications: [],
+    environment_specifications: [],
+    child_workflows: [],
+  };
+
+  // Build parent workflow spec with WORKFLOW_PROXY step
+  const proxyStep = makeStep('step-proxy', 'Child Workflow', 'WORKFLOW_PROXY', 100, 150);
+  // Set description to match child's local_id (matching strategy)
+  proxyStep.description = 'Child Workflow';
+
+  const parentSteps: MasterWorkflowStep[] = [
+    makeStep('step-start', 'Start', 'START', 100, 0),
+    proxyStep,
+    makeStep('step-end', 'End', 'END', 100, 300),
+  ];
+
+  const parentConnections: MasterWorkflowSpecification['connections'] = [
+    { from_step_id: 'step-start', to_step_id: 'step-proxy', connection_id: 'conn-1' },
+    { from_step_id: 'step-proxy', to_step_id: 'step-end', connection_id: 'conn-2' },
+  ];
+
+  return {
+    local_id: 'Parent Workflow with Proxy',
+    oid: 'wf-parent-proxy',
+    version: '1.0.0',
+    last_modified_date: '2026-01-01T00:00:00Z',
+    schemaVersion: '4.0',
+    steps: parentSteps,
+    connections: parentConnections,
+    viewport: { x: 0, y: 0, zoom: 1 },
+    starting_parameter_specifications: [],
+    output_parameter_specifications: [],
+    value_property_specifications: [],
+    resource_property_specifications: [],
+    environment_specifications: [],
+    child_workflows: [childSpec],
+  };
+}

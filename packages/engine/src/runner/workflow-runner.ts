@@ -437,6 +437,50 @@ export class WorkflowRunner implements IWorkflowRunnerForProxy {
   }
 
   /**
+   * Start a child workflow using direct step activation.
+   * This bypasses the event queue to avoid deadlock when called from within
+   * the event queue handler (e.g., during WORKFLOW_PROXY step execution).
+   */
+  async startChildWorkflowDirect(workflowInstanceId: string): Promise<void> {
+    const workflow = await this.config.workflowRepo.getById(workflowInstanceId);
+    if (!workflow) {
+      throw new Error(`Workflow ${workflowInstanceId} not found`);
+    }
+
+    // Update workflow state to RUNNING
+    workflow.workflow_state = 'RUNNING';
+    workflow.started_at = new Date().toISOString();
+    workflow.last_activity_at = new Date().toISOString();
+    await this.config.workflowRepo.save(workflow);
+
+    // Log workflow started
+    await this.config.executionLogger.log({
+      workflow_instance_id: workflowInstanceId,
+      event_type: 'WORKFLOW_STARTED',
+      event_data_json: JSON.stringify({ started_at: workflow.started_at }),
+      timestamp: new Date().toISOString(),
+    });
+
+    this.config.eventBus.emit('WORKFLOW_STARTED', { workflowInstanceId });
+
+    // Find START step
+    const runnerState = this.activeWorkflows.get(workflowInstanceId);
+    if (!runnerState) {
+      throw new Error(`Runner state for workflow ${workflowInstanceId} not found`);
+    }
+
+    const startStepOid = this.findStartStepOid(runnerState);
+    if (!startStepOid) {
+      throw new Error(`No START step found in workflow ${workflowInstanceId}`);
+    }
+
+    const startStepInstanceId = runnerState.stepOidToInstanceId.get(startStepOid)!;
+
+    // DIRECT activation -- do NOT use eventQueue.enqueue (avoids deadlock)
+    await this.activateStep(workflowInstanceId, startStepOid, startStepInstanceId);
+  }
+
+  /**
    * Create a child workflow linked to a parent workflow and step.
    * Sets parent_workflow_instance_id and parent_step_oid on the child.
    */
