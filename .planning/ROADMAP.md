@@ -84,12 +84,12 @@ Plans:
   2. User can view execution history per workflow showing completed steps with inputs, outputs, state transitions, and durations
   3. System sends notifications when user interaction steps need attention and when errors or timeouts occur; notifications work on mobile (push) and web (browser notifications)
   4. Settings screen displays notification preference toggles (enable/disable per type), storage info (downloaded count, active count, storage used), and a control to clear completed workflows
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: Workflow Proxy engine logic and child workflow lifecycle
-- [ ] 04-02: History screen and execution log queries
-- [ ] 04-03: Notifications and Settings screens
+- [ ] 04-01-PLAN.md -- WORKFLOW_PROXY engine logic, child workflow lifecycle, pause/abort propagation, EngineProvider bridge mapping
+- [ ] 04-02-PLAN.md -- History tab with workflow list, history detail with summary/audit toggle, individual delete
+- [ ] 04-03-PLAN.md -- Notification service (mobile + web), notification preferences, storage counts, full Settings screen
 
 ### Phase 5: Polish + PDF Export
 **Goal**: Users can export execution reports as PDF and the app meets production quality standards for performance, error handling, and user feedback
@@ -120,4 +120,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 ---
 *Roadmap created: 2026-02-24*
-*Last updated: 2026-02-25*
+*Last updated: 2026-02-26*
