@@ -15,7 +15,8 @@ import type { ParameterResolver } from '../parameter-resolver/parameter-resolver
 import type { ConditionEvaluator } from '../condition-evaluator/condition-evaluator';
 import type { EngineEventBus } from '../events/event-bus';
 import type { IExecutionLogger } from '../interfaces/logger';
-import type { IStepRepository } from '../interfaces/storage';
+import type { IStepRepository, IWorkflowRepository } from '../interfaces/storage';
+import type { IWorkflowRunnerForProxy } from './types';
 
 // ---------------------------------------------------------------------------
 // UnsupportedStepTypeError
@@ -43,6 +44,10 @@ export interface StepExecutionContext {
   executionLogger: IExecutionLogger;
   stepRepo: IStepRepository;
   connections: WorkflowConnection[];
+  /** Only provided for WORKFLOW_PROXY steps */
+  runner?: IWorkflowRunnerForProxy;
+  /** Only provided for WORKFLOW_PROXY steps */
+  workflowRepo?: IWorkflowRepository;
 }
 
 // ---------------------------------------------------------------------------

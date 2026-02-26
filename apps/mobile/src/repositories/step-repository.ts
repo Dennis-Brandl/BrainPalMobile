@@ -16,6 +16,7 @@ function rowToStep(row: RuntimeStepRow): RuntimeWorkflowStep {
     resolved_inputs_json: row.resolved_inputs_json,
     resolved_outputs_json: row.resolved_outputs_json,
     user_inputs_json: row.user_inputs_json,
+    child_workflow_instance_id: row.child_workflow_instance_id,
     activated_at: row.activated_at,
     started_at: row.started_at,
     completed_at: row.completed_at,
@@ -53,14 +54,15 @@ export class SqliteStepRepository implements IStepRepository {
       `INSERT INTO runtime_steps
         (instance_id, workflow_instance_id, step_oid, step_type, step_state,
          step_json, resolved_inputs_json, resolved_outputs_json, user_inputs_json,
-         activated_at, started_at, completed_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         child_workflow_instance_id, activated_at, started_at, completed_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(instance_id) DO UPDATE SET
          step_state = excluded.step_state,
          step_json = excluded.step_json,
          resolved_inputs_json = excluded.resolved_inputs_json,
          resolved_outputs_json = excluded.resolved_outputs_json,
          user_inputs_json = excluded.user_inputs_json,
+         child_workflow_instance_id = excluded.child_workflow_instance_id,
          activated_at = excluded.activated_at,
          started_at = excluded.started_at,
          completed_at = excluded.completed_at`,
@@ -74,6 +76,7 @@ export class SqliteStepRepository implements IStepRepository {
         step.resolved_inputs_json,
         step.resolved_outputs_json,
         step.user_inputs_json,
+        step.child_workflow_instance_id,
         step.activated_at,
         step.started_at,
         step.completed_at,

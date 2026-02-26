@@ -76,6 +76,7 @@ export interface RuntimeStepRow {
   resolved_inputs_json: string | null;
   resolved_outputs_json: string | null;
   user_inputs_json: string | null;
+  child_workflow_instance_id: string | null;
   activated_at: string | null;
   started_at: string | null;
   completed_at: string | null;

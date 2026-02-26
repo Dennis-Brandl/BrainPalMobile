@@ -76,6 +76,7 @@ export function createRuntimeWorkflow(
       resolved_inputs_json: null,
       resolved_outputs_json: null,
       user_inputs_json: null,
+      child_workflow_instance_id: null,
       activated_at: null,
       started_at: null,
       completed_at: null,

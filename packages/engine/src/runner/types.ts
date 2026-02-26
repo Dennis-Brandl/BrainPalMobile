@@ -15,6 +15,7 @@ import type {
 import type { IExecutionLogger } from '../interfaces/logger';
 import type { IIdGenerator } from '../interfaces/id-generator';
 import type { EngineEventBus } from '../events/event-bus';
+import type { MasterWorkflowSpecification } from '../types/master';
 
 // ---------------------------------------------------------------------------
 // RunnerConfig
@@ -72,4 +73,21 @@ export interface RecoveryResult {
   stale: string[];
   /** Workflow instance IDs that encountered errors during recovery */
   errors: Array<{ workflowId: string; error: string }>;
+}
+
+// ---------------------------------------------------------------------------
+// IWorkflowRunnerForProxy
+// ---------------------------------------------------------------------------
+
+/**
+ * Interface exposed to the step executor for WORKFLOW_PROXY steps.
+ * Allows creating and starting child workflows without exposing the full runner.
+ */
+export interface IWorkflowRunnerForProxy {
+  createChildWorkflow(
+    childSpec: MasterWorkflowSpecification,
+    parentWorkflowInstanceId: string,
+    parentStepOid: string,
+  ): Promise<string>;
+  startWorkflow(workflowInstanceId: string): Promise<void>;
 }
