@@ -25,26 +25,26 @@
 - [x] **EXEC-01**: User can create a Runtime Workflow as a deep copy of a Master Workflow Specification
 - [x] **EXEC-02**: ISA-88 state machine manages step lifecycle (observable track: IDLE through COMPLETED)
 - [x] **EXEC-03**: Scheduler determines next steps from workflow graph when a step completes
-- [ ] **EXEC-04**: Scheduler handles PARALLEL fork (activates all outgoing branches concurrently)
-- [ ] **EXEC-05**: Scheduler handles WAIT ALL join (proceeds when all incoming branches complete)
-- [ ] **EXEC-06**: Scheduler handles WAIT ANY join (proceeds when first incoming branch completes)
+- [x] **EXEC-04**: Scheduler handles PARALLEL fork (activates all outgoing branches concurrently)
+- [x] **EXEC-05**: Scheduler handles WAIT ALL join (proceeds when all incoming branches complete)
+- [x] **EXEC-06**: Scheduler handles WAIT ANY join (proceeds when first incoming branch completes)
 - [x] **EXEC-07**: Condition Evaluator handles SELECT 1 branching with all 10 comparison operators
-- [ ] **EXEC-08**: Resource Manager acquires resources with FIFO queues and deadlock prevention (alphabetical order)
-- [ ] **EXEC-09**: Resource Manager handles SYNC barriers (Synchronize, Send, Receive matching)
-- [ ] **EXEC-10**: Workflow Proxy steps create and execute child workflows with output parameter propagation
+- [x] **EXEC-08**: Resource Manager acquires resources with FIFO queues and deadlock prevention (alphabetical order)
+- [x] **EXEC-09**: Resource Manager handles SYNC barriers (Synchronize, Send, Receive matching)
+- [x] **EXEC-10**: Workflow Proxy steps create and execute child workflows with output parameter propagation
 - [x] **EXEC-11**: Parameter Resolver resolves inputs (literal values and Value Property lookups)
 - [x] **EXEC-12**: Parameter Resolver writes outputs to Value Properties (workflow and environment scope)
 
 ### User Interface
 
-- [ ] **UI-01**: Home screen displays active workflows with status and downloaded workflows
-- [ ] **UI-02**: Execution screen renders WYSIWYG forms from form_layout_config with device-type selection
-- [ ] **UI-03**: Form elements use absolute positioning with canvas scaling to fit device screen
-- [ ] **UI-04**: Step carousel navigates active user interaction steps with Previous/Next wrap-around
-- [ ] **UI-05**: Yes/No steps render with custom labels and output values
-- [ ] **UI-06**: User can PAUSE, RESUME, STOP, and ABORT workflows from the execution screen
-- [ ] **UI-07**: Bottom tab navigation: Home, Execute, Overview (placeholder), History, Settings
-- [ ] **UI-08**: Responsive layouts adapt to phone, tablet, and desktop form factors
+- [x] **UI-01**: Home screen displays active workflows with status and downloaded workflows
+- [x] **UI-02**: Execution screen renders WYSIWYG forms from form_layout_config with device-type selection
+- [x] **UI-03**: Form elements use absolute positioning with canvas scaling to fit device screen
+- [x] **UI-04**: Step carousel navigates active user interaction steps with Previous/Next wrap-around
+- [x] **UI-05**: Yes/No steps render with custom labels and output values
+- [x] **UI-06**: User can PAUSE, RESUME, STOP, and ABORT workflows from the execution screen
+- [x] **UI-07**: Bottom tab navigation: Home, Execute, Overview (placeholder), History, Settings
+- [x] **UI-08**: Responsive layouts adapt to phone, tablet, and desktop form factors
 
 ### Persistence
 
@@ -56,20 +56,20 @@
 
 ### History & Reporting
 
-- [ ] **HIST-01**: User can view execution history per workflow with completed steps, inputs, outputs, and durations
+- [x] **HIST-01**: User can view execution history per workflow with completed steps, inputs, outputs, and durations
 - [ ] **HIST-02**: User can export execution report as PDF
 
 ### Notifications
 
-- [ ] **NOTF-01**: System sends notifications when user interaction steps need attention
-- [ ] **NOTF-02**: System sends notifications for errors and timeouts
-- [ ] **NOTF-03**: User can configure notification preferences (enable/disable per type) in Settings
+- [x] **NOTF-01**: System sends notifications when user interaction steps need attention
+- [x] **NOTF-02**: System sends notifications for errors (timeouts deferred to Environment Actions, v2 scope)
+- [x] **NOTF-03**: User can configure notification preferences (enable/disable per type) in Settings
 
 ### Settings
 
-- [ ] **SETT-01**: Settings screen displays notification preferences with toggles
-- [ ] **SETT-02**: Settings screen displays storage info (downloaded count, active count, storage used)
-- [ ] **SETT-03**: User can clear completed workflows from storage
+- [x] **SETT-01**: Settings screen displays notification preferences with toggles
+- [x] **SETT-02**: Settings screen displays storage info (downloaded count, active count, storage used)
+- [x] **SETT-03**: User can clear completed workflows from storage
 
 ## v2 Requirements
 
@@ -119,48 +119,48 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FNDTN-01 | Phase 1 | Pending |
-| FNDTN-02 | Phase 1 | Pending |
-| FNDTN-03 | Phase 1 | Pending |
-| FNDTN-04 | Phase 1 | Pending |
-| PKG-01 | Phase 2 | Pending |
-| PKG-02 | Phase 2 | Pending |
-| PKG-03 | Phase 2 | Pending |
-| PKG-04 | Phase 2 | Pending |
-| PKG-05 | Phase 2 | Pending |
-| EXEC-01 | Phase 2 | Pending |
-| EXEC-02 | Phase 2 | Pending |
-| EXEC-03 | Phase 2 | Pending |
-| EXEC-04 | Phase 3 | Pending |
-| EXEC-05 | Phase 3 | Pending |
-| EXEC-06 | Phase 3 | Pending |
-| EXEC-07 | Phase 2 | Pending |
-| EXEC-08 | Phase 3 | Pending |
-| EXEC-09 | Phase 3 | Pending |
-| EXEC-10 | Phase 4 | Pending |
-| EXEC-11 | Phase 2 | Pending |
-| EXEC-12 | Phase 2 | Pending |
-| UI-01 | Phase 3 | Pending |
-| UI-02 | Phase 3 | Pending |
-| UI-03 | Phase 3 | Pending |
-| UI-04 | Phase 3 | Pending |
-| UI-05 | Phase 3 | Pending |
-| UI-06 | Phase 3 | Pending |
-| UI-07 | Phase 3 | Pending |
-| UI-08 | Phase 3 | Pending |
-| PERS-01 | Phase 1 | Pending |
-| PERS-02 | Phase 2 | Pending |
-| PERS-03 | Phase 2 | Pending |
-| PERS-04 | Phase 2 | Pending |
-| PERS-05 | Phase 1 | Pending |
-| HIST-01 | Phase 4 | Pending |
+| FNDTN-01 | Phase 1 | Complete |
+| FNDTN-02 | Phase 1 | Complete |
+| FNDTN-03 | Phase 1 | Complete |
+| FNDTN-04 | Phase 1 | Complete |
+| PKG-01 | Phase 2 | Complete |
+| PKG-02 | Phase 2 | Complete |
+| PKG-03 | Phase 2 | Complete |
+| PKG-04 | Phase 2 | Complete |
+| PKG-05 | Phase 2 | Complete |
+| EXEC-01 | Phase 2 | Complete |
+| EXEC-02 | Phase 2 | Complete |
+| EXEC-03 | Phase 2 | Complete |
+| EXEC-04 | Phase 3 | Complete |
+| EXEC-05 | Phase 3 | Complete |
+| EXEC-06 | Phase 3 | Complete |
+| EXEC-07 | Phase 2 | Complete |
+| EXEC-08 | Phase 3 | Complete |
+| EXEC-09 | Phase 3 | Complete |
+| EXEC-10 | Phase 4 | Complete |
+| EXEC-11 | Phase 2 | Complete |
+| EXEC-12 | Phase 2 | Complete |
+| UI-01 | Phase 3 | Complete |
+| UI-02 | Phase 3 | Complete |
+| UI-03 | Phase 3 | Complete |
+| UI-04 | Phase 3 | Complete |
+| UI-05 | Phase 3 | Complete |
+| UI-06 | Phase 3 | Complete |
+| UI-07 | Phase 3 | Complete |
+| UI-08 | Phase 3 | Complete |
+| PERS-01 | Phase 1 | Complete |
+| PERS-02 | Phase 2 | Complete |
+| PERS-03 | Phase 2 | Complete |
+| PERS-04 | Phase 2 | Complete |
+| PERS-05 | Phase 1 | Complete |
+| HIST-01 | Phase 4 | Complete |
 | HIST-02 | Phase 5 | Pending |
-| NOTF-01 | Phase 4 | Pending |
-| NOTF-02 | Phase 4 | Pending |
-| NOTF-03 | Phase 4 | Pending |
-| SETT-01 | Phase 4 | Pending |
-| SETT-02 | Phase 4 | Pending |
-| SETT-03 | Phase 4 | Pending |
+| NOTF-01 | Phase 4 | Complete |
+| NOTF-02 | Phase 4 | Complete |
+| NOTF-03 | Phase 4 | Complete |
+| SETT-01 | Phase 4 | Complete |
+| SETT-02 | Phase 4 | Complete |
+| SETT-03 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 42 total
@@ -169,4 +169,4 @@
 
 ---
 *Requirements defined: 2026-02-24*
-*Last updated: 2026-02-24 after roadmap creation*
+*Last updated: 2026-02-26 after Phase 4 completion*

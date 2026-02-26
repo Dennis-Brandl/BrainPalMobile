@@ -14,8 +14,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Monorepo scaffold, SQLite persistence layer, cross-platform baseline on all three targets
 - [x] **Phase 2: Engine Core** - ISA-88 state machine, scheduler, parameter/condition subsystems, import pipeline, crash recovery
-- [ ] **Phase 3: Execution UI** - WYSIWYG form renderer, step carousel, execution screen, home screen, state controls, navigation
-- [ ] **Phase 4: Workflow Proxy + Ancillary Features** - Nested workflow execution, history display, notifications, settings
+- [x] **Phase 3: Execution UI** - WYSIWYG form renderer, step carousel, execution screen, home screen, state controls, navigation
+- [x] **Phase 4: Workflow Proxy + Ancillary Features** - Nested workflow execution, history display, notifications, settings
 - [ ] **Phase 5: Polish + PDF Export** - Execution report export, performance tuning, production hardening
 
 ## Phase Details
@@ -70,10 +70,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: SQLite repository implementations, EngineProvider, execution store, and schema fix
-- [ ] 03-02: Home screen with Active/Library tabs, library detail screen, state badges, navigation
-- [ ] 03-03: Canvas scaling algorithm, WYSIWYG form renderer, and form element components
-- [ ] 03-04: Step carousel, execution screen, Yes/No support, and state control UI
+- [x] 03-01: SQLite repository implementations, EngineProvider, execution store, and schema fix
+- [x] 03-02: Home screen with Active/Library tabs, library detail screen, state badges, navigation
+- [x] 03-03: Canvas scaling algorithm, WYSIWYG form renderer, and form element components
+- [x] 03-04: Step carousel, execution screen, Yes/No support, and state control UI
 
 ### Phase 4: Workflow Proxy + Ancillary Features
 **Goal**: Users can execute workflows that contain nested child workflows (Workflow Proxy), view execution history with full detail, receive notifications for steps needing attention and errors, and manage app settings
@@ -87,9 +87,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- WORKFLOW_PROXY engine logic, child workflow lifecycle, pause/abort propagation, EngineProvider bridge mapping
-- [ ] 04-02-PLAN.md -- History tab with workflow list, history detail with summary/audit toggle, individual delete
-- [ ] 04-03-PLAN.md -- Notification service (mobile + web), notification preferences, storage counts, full Settings screen
+- [x] 04-01: WORKFLOW_PROXY engine logic, child workflow lifecycle, pause/abort propagation, EngineProvider bridge mapping
+- [x] 04-02: History tab with workflow list, history detail with summary/audit toggle, individual delete
+- [x] 04-03: Notification service (mobile + web), notification preferences, storage counts, full Settings screen
 
 ### Phase 5: Polish + PDF Export
 **Goal**: Users can export execution reports as PDF and the app meets production quality standards for performance, error handling, and user feedback
@@ -114,8 +114,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|---------------|--------|-----------|
 | 1. Foundation | 3/3 | ✓ Complete | 2026-02-25 |
 | 2. Engine Core | 5/5 | ✓ Complete | 2026-02-25 |
-| 3. Execution UI | 0/4 | Not started | - |
-| 4. Workflow Proxy + Ancillary | 0/3 | Not started | - |
+| 3. Execution UI | 4/4 | ✓ Complete | 2026-02-25 |
+| 4. Workflow Proxy + Ancillary | 3/3 | ✓ Complete | 2026-02-26 |
 | 5. Polish + PDF Export | 0/2 | Not started | - |
 
 ---

@@ -110,6 +110,7 @@ Recent decisions affecting current work:
 - [04-01]: Parent step resumed via direct handleUserInputCompletion (not event queue enqueue)
 - [04-01]: Abort/stop propagate to children FIRST, then clean up parent (correct teardown order)
 - [04-01]: EngineProvider parent cache pre-populated during crash recovery to avoid race conditions
+- [04-phase]: No engine-level timeouts -- workflows are long-lived (days/weeks); timeouts come from Environment Actions (future v2 scope)
 
 ### Pending Todos
 
