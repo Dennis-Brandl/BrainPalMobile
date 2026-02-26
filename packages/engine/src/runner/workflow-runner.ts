@@ -6,7 +6,7 @@ import type { MasterWorkflowSpecification, MasterWorkflowStep } from '../types/m
 import type { RuntimeWorkflowStep, WorkflowConnection } from '../types/runtime';
 import type { StepState, StateEvent } from '../types/common';
 import type { EngineEvent } from '../types/events';
-import type { RunnerConfig, WorkflowRunnerState } from './types';
+import type { RunnerConfig, WorkflowRunnerState, IWorkflowRunnerForProxy } from './types';
 import type { StepExecutionContext } from './step-executor';
 
 import { StateMachine } from '../state-machine/state-machine';
@@ -37,7 +37,7 @@ import { ACTIVE_STATES } from '../types/common';
  * all step types. All operations that mutate step state go through the
  * EngineEventQueue to ensure serial processing.
  */
-export class WorkflowRunner {
+export class WorkflowRunner implements IWorkflowRunnerForProxy {
   private activeWorkflows = new Map<string, WorkflowRunnerState>();
   private eventQueue: EngineEventQueue;
   private scheduler = new Scheduler();
@@ -266,6 +266,15 @@ export class WorkflowRunner {
       }
     }
 
+    // Propagate pause to child workflows
+    for (const step of steps) {
+      if (step.step_type === 'WORKFLOW_PROXY' && step.child_workflow_instance_id) {
+        if (this.activeWorkflows.has(step.child_workflow_instance_id)) {
+          await this.pauseWorkflow(step.child_workflow_instance_id);
+        }
+      }
+    }
+
     await this.config.workflowRepo.updateState(workflowInstanceId, 'PAUSED');
   }
 
@@ -295,6 +304,15 @@ export class WorkflowRunner {
       }
     }
 
+    // Propagate resume to child workflows
+    for (const step of steps) {
+      if (step.step_type === 'WORKFLOW_PROXY' && step.child_workflow_instance_id) {
+        if (this.activeWorkflows.has(step.child_workflow_instance_id)) {
+          await this.resumeWorkflow(step.child_workflow_instance_id);
+        }
+      }
+    }
+
     await this.config.workflowRepo.updateState(workflowInstanceId, 'RUNNING');
   }
 
@@ -307,8 +325,17 @@ export class WorkflowRunner {
       throw new Error(`Runner state for workflow ${workflowInstanceId} not found`);
     }
 
-    // Abort all active steps
+    // Abort child workflows FIRST (clean up children before parent)
     const steps = await this.config.stepRepo.getByWorkflow(workflowInstanceId);
+    for (const step of steps) {
+      if (step.step_type === 'WORKFLOW_PROXY' && step.child_workflow_instance_id) {
+        if (this.activeWorkflows.has(step.child_workflow_instance_id)) {
+          await this.abort(step.child_workflow_instance_id);
+        }
+      }
+    }
+
+    // Abort all active parent steps
     for (const step of steps) {
       if (ACTIVE_STATES.has(step.step_state)) {
         const sm = runnerState.stateMachines.get(step.step_oid);
@@ -347,8 +374,17 @@ export class WorkflowRunner {
       throw new Error(`Runner state for workflow ${workflowInstanceId} not found`);
     }
 
-    // Stop all active steps
+    // Stop child workflows FIRST (clean up children before parent)
     const steps = await this.config.stepRepo.getByWorkflow(workflowInstanceId);
+    for (const step of steps) {
+      if (step.step_type === 'WORKFLOW_PROXY' && step.child_workflow_instance_id) {
+        if (this.activeWorkflows.has(step.child_workflow_instance_id)) {
+          await this.stop(step.child_workflow_instance_id);
+        }
+      }
+    }
+
+    // Stop all active parent steps
     for (const step of steps) {
       if (ACTIVE_STATES.has(step.step_state)) {
         const sm = runnerState.stateMachines.get(step.step_oid);
@@ -398,6 +434,28 @@ export class WorkflowRunner {
    */
   restoreWorkflowState(state: WorkflowRunnerState): void {
     this.activeWorkflows.set(state.workflowInstanceId, state);
+  }
+
+  /**
+   * Create a child workflow linked to a parent workflow and step.
+   * Sets parent_workflow_instance_id and parent_step_oid on the child.
+   */
+  async createChildWorkflow(
+    childSpec: MasterWorkflowSpecification,
+    parentWorkflowInstanceId: string,
+    parentStepOid: string,
+  ): Promise<string> {
+    const childInstanceId = await this.createWorkflow(childSpec);
+
+    // Link child to parent
+    const childWf = await this.config.workflowRepo.getById(childInstanceId);
+    if (childWf) {
+      childWf.parent_workflow_instance_id = parentWorkflowInstanceId;
+      childWf.parent_step_oid = parentStepOid;
+      await this.config.workflowRepo.save(childWf);
+    }
+
+    return childInstanceId;
   }
 
   // -------------------------------------------------------------------------
@@ -646,6 +704,54 @@ export class WorkflowRunner {
     // Check if this is an END step -> complete workflow
     const step = runnerState.schedulerContext.steps.get(stepOid);
     if (step?.step_type === 'END') {
+      // Check if this is a child workflow completing
+      const workflow = await this.config.workflowRepo.getById(workflowInstanceId);
+      if (workflow?.parent_workflow_instance_id) {
+        // CHILD WORKFLOW COMPLETING -- propagate outputs BEFORE completeWorkflow
+        // (completeWorkflow deletes Value Properties via deleteByWorkflow)
+        const parentRunnerState = this.activeWorkflows.get(workflow.parent_workflow_instance_id);
+        if (parentRunnerState && workflow.parent_step_oid) {
+          // Read child workflow's output Value Properties
+          const outputProperties = await this.config.valuePropertyRepo.getAllByWorkflow(workflowInstanceId);
+
+          // Find parent step
+          const parentStepInstanceId = parentRunnerState.stepOidToInstanceId.get(workflow.parent_step_oid);
+          if (parentStepInstanceId) {
+            const parentStep = await this.config.stepRepo.getById(parentStepInstanceId);
+            if (parentStep) {
+              // Propagate outputs to parent step's resolved_outputs_json
+              parentStep.resolved_outputs_json = JSON.stringify(outputProperties);
+              await this.config.stepRepo.save(parentStep);
+            }
+          }
+
+          // Now complete the child workflow (this deletes Value Properties)
+          await completeWorkflow(
+            workflowInstanceId,
+            this.config.workflowRepo,
+            this.config.valuePropertyRepo,
+            this.config.resourcePoolRepo,
+            this.config.executionLogger,
+          );
+          this.config.eventBus.emit('WORKFLOW_COMPLETED', { workflowInstanceId });
+
+          // Resume parent step: EXECUTING -> COMPLETING -> COMPLETED
+          // Use DIRECT call (we are inside event queue handler -- avoids Pitfall 3)
+          if (parentStepInstanceId) {
+            await this.handleUserInputCompletion(
+              workflow.parent_workflow_instance_id,
+              workflow.parent_step_oid,
+              parentStepInstanceId,
+            );
+          }
+
+          // Clean up child from active workflows
+          this.activeWorkflows.delete(workflowInstanceId);
+          return;
+        }
+      }
+
+      // Top-level workflow completing (no parent)
       await completeWorkflow(
         workflowInstanceId,
         this.config.workflowRepo,
@@ -755,6 +861,8 @@ export class WorkflowRunner {
       executionLogger: this.config.executionLogger,
       stepRepo: this.config.stepRepo,
       connections: runnerState?.schedulerContext.connections ?? [],
+      runner: this,
+      workflowRepo: this.config.workflowRepo,
     };
   }
 }

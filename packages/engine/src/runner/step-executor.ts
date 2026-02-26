@@ -9,6 +9,7 @@ import type {
 } from '../types/runtime';
 import type {
   MasterWorkflowStep,
+  MasterWorkflowSpecification,
   OutputParameterSpecification,
 } from '../types/master';
 import type { ParameterResolver } from '../parameter-resolver/parameter-resolver';
@@ -251,7 +252,73 @@ export async function executeExecutingPhase(
     }
 
     case 'WORKFLOW_PROXY': {
-      throw new UnsupportedStepTypeError('WORKFLOW_PROXY requires Phase 4 implementation');
+      // Create and start a child workflow
+      if (!ctx.runner || !ctx.workflowRepo) {
+        throw new Error('WORKFLOW_PROXY step requires runner and workflowRepo in context');
+      }
+
+      // Get the parent workflow's full specification to find child workflows
+      const parentWorkflow = await ctx.workflowRepo.getById(ctx.workflowInstanceId);
+      if (!parentWorkflow) {
+        throw new Error(`Parent workflow ${ctx.workflowInstanceId} not found`);
+      }
+      const parentSpec = JSON.parse(parentWorkflow.specification_json) as MasterWorkflowSpecification;
+
+      // Resolve which child workflow this WORKFLOW_PROXY step invokes
+      let childSpec: MasterWorkflowSpecification | undefined;
+
+      if (parentSpec.child_workflows.length === 1) {
+        // Single child -- use directly (most common case)
+        childSpec = parentSpec.child_workflows[0];
+      } else if (parentSpec.child_workflows.length > 1) {
+        // Try matching step description against child local_id
+        const stepDesc = (masterStep.description ?? '').trim().toLowerCase();
+        childSpec = parentSpec.child_workflows.find(
+          (cw) => cw.local_id.trim().toLowerCase() === stepDesc,
+        );
+
+        // Try matching step local_id against child local_id
+        if (!childSpec) {
+          const stepLocalId = masterStep.local_id.trim().toLowerCase();
+          childSpec = parentSpec.child_workflows.find(
+            (cw) => cw.local_id.trim().toLowerCase() === stepLocalId,
+          );
+        }
+
+        // Positional fallback: find this step's index among all WORKFLOW_PROXY steps
+        if (!childSpec) {
+          const proxySteps = parentSpec.steps.filter((s) => s.step_type === 'WORKFLOW_PROXY');
+          const proxyIndex = proxySteps.findIndex((s) => s.oid === step.step_oid);
+          if (proxyIndex >= 0 && proxyIndex < parentSpec.child_workflows.length) {
+            childSpec = parentSpec.child_workflows[proxyIndex];
+          }
+        }
+      }
+
+      if (!childSpec) {
+        const available = parentSpec.child_workflows.map((cw) => cw.local_id).join(', ');
+        throw new Error(
+          `WORKFLOW_PROXY step ${step.step_oid} could not match a child workflow. ` +
+          `Available child workflows: [${available}]`,
+        );
+      }
+
+      // Create and start child workflow
+      const childInstanceId = await ctx.runner.createChildWorkflow(
+        childSpec,
+        ctx.workflowInstanceId,
+        ctx.step.step_oid,
+      );
+
+      // Save child reference on parent step
+      ctx.step.child_workflow_instance_id = childInstanceId;
+      await ctx.stepRepo.save(ctx.step);
+
+      // Start the child workflow
+      await ctx.runner.startWorkflow(childInstanceId);
+
+      // Return false -- parent step stays in EXECUTING while child runs
+      return false;
     }
 
     case 'ACTION_PROXY': {

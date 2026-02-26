@@ -7,6 +7,7 @@ export default function ExecutionLayout() {
     <Stack>
       <Stack.Screen name="[instanceId]" options={{ headerShown: false }} />
       <Stack.Screen name="library/[oid]" options={{ title: 'Workflow Details' }} />
+      <Stack.Screen name="history/[instanceId]" options={{ title: 'Execution History' }} />
     </Stack>
   );
 }
