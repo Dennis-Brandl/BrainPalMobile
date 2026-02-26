@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Users can import a workflow package and execute it step-by-step on any platform -- the execution engine must faithfully walk the workflow graph, render forms correctly, handle branching/resources/nesting, and persist state across crashes.
-**Current focus:** Phase 5: Polish & Integration Testing
+**Current focus:** Phase 5: Polish & PDF Export
 
 ## Current Position
 
 Phase: 4 of 5 (Workflow Proxy + Ancillary Features)
 Plan: 3 of 3 in current phase
-Status: Phase 4 complete
-Last activity: 2026-02-26 -- Completed 04-01-PLAN.md (WORKFLOW_PROXY Execution)
+Status: Phase 4 verified (UAT complete: 9/10 passed, 1 low-severity deferred)
+Last activity: 2026-02-26 -- Phase 4 UAT complete
 
 Progress: [####################] 15/15 Plans (4/5 Phases complete, Phase 4 complete)
 
@@ -131,5 +131,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed quick-003 (Add Import button to Library tab). All Phase 4 plans complete. Ready for Phase 5.
+Stopped at: Phase 4 UAT complete (9/10 passed). 3 critical bugs fixed during testing (FK constraint, form data loss, Yes/No routing). Ready for Phase 5.
 Resume file: None
