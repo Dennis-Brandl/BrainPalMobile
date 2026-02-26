@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Users can import a workflow package and execute it step-by-step on any platform -- the execution engine must faithfully walk the workflow graph, render forms correctly, handle branching/resources/nesting, and persist state across crashes.
-**Current focus:** Phase 4: Workflow Proxy + Ancillary Features
+**Current focus:** Phase 5: Polish & Integration Testing
 
 ## Current Position
 
 Phase: 4 of 5 (Workflow Proxy + Ancillary Features)
 Plan: 3 of 3 in current phase
-Status: In progress (04-02 and 04-03 complete, 04-01 may still be executing in parallel)
-Last activity: 2026-02-26 -- Completed 04-02-PLAN.md (History Tab & Detail Screen)
+Status: Phase 4 complete
+Last activity: 2026-02-26 -- Completed 04-01-PLAN.md (WORKFLOW_PROXY Execution)
 
-Progress: [##############......] 14/15 Plans (3/5 Phases complete, Phase 4 in progress)
+Progress: [####################] 15/15 Plans (4/5 Phases complete, Phase 4 complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 5.4 min
-- Total execution time: 1.23 hours
+- Total plans completed: 15
+- Average duration: 5.5 min
+- Total execution time: 1.40 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [##############......] 14/15 Plans (3/5 Phases complete, Phase 4 in pr
 | 01-foundation | 3/3 | 13 min | 4.3 min |
 | 02-engine-core | 5/5 | 35 min | 7.0 min |
 | 03-execution-ui | 4/4 | 22 min | 5.5 min |
-| 04-workflow-proxy-ancillary | 2/3 | 10 min | 5.0 min |
+| 04-workflow-proxy-ancillary | 3/3 | 20 min | 6.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (5 min), 03-03 (5 min), 03-04 (4 min), 04-03 (6 min), 04-02 (4 min)
-- Trend: stable
+- Last 5 plans: 03-03 (5 min), 03-04 (4 min), 04-03 (6 min), 04-02 (4 min), 04-01 (10 min)
+- Trend: stable (04-01 slightly longer due to complex nested workflow execution)
 
 *Updated after each plan completion*
 
@@ -104,6 +104,12 @@ Recent decisions affecting current work:
 - [04-02]: Audit trail color-codes event types: blue=state, green=param, orange=user, red=error, gray=other
 - [04-02]: History detail derives overall state from step states rather than separate workflow query
 - [04-02]: Delete order: execution_log_entries first (no CASCADE FK), then child workflows, then parent
+- [04-01]: startChildWorkflowDirect bypasses event queue to avoid deadlock during WORKFLOW_PROXY child startup
+- [04-01]: Child workflow matching: single child > description match > local_id match > positional fallback
+- [04-01]: Output propagation reads child Value Properties BEFORE completeWorkflow deletes them
+- [04-01]: Parent step resumed via direct handleUserInputCompletion (not event queue enqueue)
+- [04-01]: Abort/stop propagate to children FIRST, then clean up parent (correct teardown order)
+- [04-01]: EngineProvider parent cache pre-populated during crash recovery to avoid race conditions
 
 ### Pending Todos
 
@@ -123,5 +129,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed 04-02-PLAN.md (History Tab & Detail Screen). Phase 4 plan 04-01 may still be executing in parallel.
+Stopped at: Completed 04-01-PLAN.md (WORKFLOW_PROXY Execution). All Phase 4 plans complete. Ready for Phase 5.
 Resume file: None
