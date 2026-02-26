@@ -10,6 +10,16 @@ import { useNotificationPrefs } from '../../src/hooks/useNotificationPrefs';
 import { useStorageCounts } from '../../src/hooks/useStorageCounts';
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+// ---------------------------------------------------------------------------
 // DB Status types (retained from original settings screen)
 // ---------------------------------------------------------------------------
 
@@ -168,6 +178,10 @@ export default function SettingsScreen() {
               <StatusRow
                 label="Completed Instances"
                 value={String(counts.completed)}
+              />
+              <StatusRow
+                label="Storage Used"
+                value={formatBytes(counts.storageBytes)}
               />
             </>
           )}

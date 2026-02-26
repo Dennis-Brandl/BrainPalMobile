@@ -12,6 +12,7 @@ export interface StorageCounts {
   downloaded: number;
   active: number;
   completed: number;
+  storageBytes: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -25,7 +26,7 @@ export function useStorageCounts() {
 
   const refresh = useCallback(async () => {
     try {
-      const [downloadedRow, activeRow, completedRow] = await Promise.all([
+      const [downloadedRow, activeRow, completedRow, storageRow] = await Promise.all([
         db.getFirstAsync<{ count: number }>(
           'SELECT COUNT(*) as count FROM master_workflows',
         ),
@@ -39,12 +40,16 @@ export function useStorageCounts() {
            WHERE workflow_state IN ('COMPLETED', 'ABORTED', 'STOPPED')
            AND parent_workflow_instance_id IS NULL`,
         ),
+        db.getFirstAsync<{ bytes: number }>(
+          `SELECT page_count * page_size as bytes FROM pragma_page_count(), pragma_page_size()`,
+        ),
       ]);
 
       setCounts({
         downloaded: downloadedRow?.count ?? 0,
         active: activeRow?.count ?? 0,
         completed: completedRow?.count ?? 0,
+        storageBytes: storageRow?.bytes ?? 0,
       });
     } catch (err) {
       console.warn('useStorageCounts: failed to load counts', err);
