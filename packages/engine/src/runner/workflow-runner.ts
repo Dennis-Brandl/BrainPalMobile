@@ -489,17 +489,95 @@ export class WorkflowRunner implements IWorkflowRunnerForProxy {
     parentWorkflowInstanceId: string,
     parentStepOid: string,
   ): Promise<string> {
-    const childInstanceId = await this.createWorkflow(childSpec);
+    // Child workflow specs are embedded in the parent's specification_json and
+    // do NOT have their own row in master_workflows.  The runtime_workflows
+    // table has FK: master_workflow_oid -> master_workflows(oid).  To satisfy
+    // this constraint we use the PARENT's master_workflow_oid (the child is
+    // logically part of the same package).
+    const parentWf = await this.config.workflowRepo.getById(parentWorkflowInstanceId);
+    const parentMasterOid = parentWf?.master_workflow_oid ?? childSpec.oid;
 
-    // Link child to parent
-    const childWf = await this.config.workflowRepo.getById(childInstanceId);
-    if (childWf) {
-      childWf.parent_workflow_instance_id = parentWorkflowInstanceId;
-      childWf.parent_step_oid = parentStepOid;
-      await this.config.workflowRepo.save(childWf);
+    const { workflow, steps, connections } = createRuntimeWorkflow(
+      childSpec,
+      this.config.idGenerator,
+    );
+
+    // Set parent link and override master OID BEFORE saving (avoids FK error)
+    workflow.master_workflow_oid = parentMasterOid;
+    workflow.parent_workflow_instance_id = parentWorkflowInstanceId;
+    workflow.parent_step_oid = parentStepOid;
+
+    // Save to repositories
+    await this.config.workflowRepo.save(workflow);
+    await this.config.stepRepo.saveMany(steps);
+    await this.config.connectionRepo.saveMany(workflow.instance_id, connections);
+
+    // Initialize Value Properties from child spec defaults
+    if (childSpec.value_property_specifications?.length > 0) {
+      await this.config.valuePropertyRepo.initializeFromSpec(
+        'workflow',
+        workflow.instance_id,
+        childSpec.value_property_specifications,
+      );
     }
 
-    return childInstanceId;
+    // Initialize resource pools
+    if (childSpec.resource_property_specifications?.length > 0) {
+      await this.resourceManager.initializePools(
+        'workflow',
+        workflow.instance_id,
+        childSpec.resource_property_specifications,
+      );
+    }
+
+    // Build scheduler adjacency lists
+    const { outgoing, incoming } = this.scheduler.buildAdjacencyLists(connections);
+
+    // Create step maps
+    const stepsMap = new Map<string, RuntimeWorkflowStep>();
+    const stepOidToInstanceId = new Map<string, string>();
+    const stepInstanceIdToOid = new Map<string, string>();
+
+    for (const step of steps) {
+      stepsMap.set(step.step_oid, step);
+      stepOidToInstanceId.set(step.step_oid, step.instance_id);
+      stepInstanceIdToOid.set(step.instance_id, step.step_oid);
+    }
+
+    // Create StateMachine instances for each step
+    const stateMachines = new Map<string, StateMachine<StepState, StateEvent>>();
+    for (const step of steps) {
+      const sm = new StateMachine<StepState, StateEvent>({
+        initialState: 'IDLE',
+        transitions: ISA88_OBSERVABLE_TRANSITIONS,
+      });
+      stateMachines.set(step.step_oid, sm);
+    }
+
+    // Store workflow runner state
+    const runnerState: WorkflowRunnerState = {
+      workflowInstanceId: workflow.instance_id,
+      masterWorkflowOid: childSpec.oid,
+      stateMachines,
+      schedulerContext: { outgoing, incoming, steps: stepsMap, connections },
+      stepOidToInstanceId,
+      stepInstanceIdToOid,
+    };
+    this.activeWorkflows.set(workflow.instance_id, runnerState);
+
+    // Log creation
+    await this.config.executionLogger.log({
+      workflow_instance_id: workflow.instance_id,
+      event_type: 'WORKFLOW_CREATED',
+      event_data_json: JSON.stringify({
+        masterOid: childSpec.oid,
+        parentWorkflowInstanceId,
+        parentStepOid,
+      }),
+      timestamp: new Date().toISOString(),
+    });
+
+    return workflow.instance_id;
   }
 
   // -------------------------------------------------------------------------

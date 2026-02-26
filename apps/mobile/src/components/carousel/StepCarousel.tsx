@@ -29,7 +29,7 @@ export interface StepCarouselProps {
   steps: ActiveStep[];
   currentIndex: number;
   onIndexChange: (index: number) => void;
-  onStepComplete: (stepInstanceId: string, outputValue?: string) => void;
+  onStepComplete: (stepInstanceId: string, formData: Record<string, string>, outputValue?: string) => void;
   images: Map<string, string>;
 }
 
@@ -86,9 +86,10 @@ export function StepCarousel({
   const handleSubmit = useCallback(
     (stepInstanceId: string, outputValue?: string) => {
       setSubmittingSteps((prev) => new Set(prev).add(stepInstanceId));
-      onStepComplete(stepInstanceId, outputValue);
+      const stepFormData = formDataMap[stepInstanceId] ?? {};
+      onStepComplete(stepInstanceId, stepFormData, outputValue);
     },
-    [onStepComplete],
+    [onStepComplete, formDataMap],
   );
 
   // -----------------------------------------------------------------------

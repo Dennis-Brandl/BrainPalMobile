@@ -158,11 +158,10 @@ export default function ExecutionScreen() {
   // -----------------------------------------------------------------------
 
   const handleStepComplete = useCallback(
-    async (stepInstanceId: string, outputValue?: string) => {
+    async (stepInstanceId: string, formFieldData: Record<string, string>, outputValue?: string) => {
       try {
-        // Build form data for submission
-        // For YES_NO steps: outputValue is the yes/no value
-        const formData: Record<string, string> = {};
+        // Merge form field data (checkbox, radio, text, etc.) with the button output value
+        const formData: Record<string, string> = { ...formFieldData };
         if (outputValue !== undefined) {
           formData._output = outputValue;
         }
