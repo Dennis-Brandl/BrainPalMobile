@@ -51,6 +51,7 @@ export default function LibraryDetailScreen() {
   const db = useSQLiteContext();
   const { runner } = useEngine();
   const addActiveWorkflow = useExecutionStore((s) => s.addActiveWorkflow);
+  const setCurrentWorkflow = useExecutionStore((s) => s.setCurrentWorkflow);
 
   const [isStarting, setIsStarting] = useState(false);
 
@@ -111,28 +112,28 @@ export default function LibraryDetailScreen() {
       // 2. Parse to MasterWorkflowSpecification
       const spec = JSON.parse(specJson) as MasterWorkflowSpecification;
 
-      // 3. Create runtime workflow via engine runner
+      // 3. Create runtime workflow via engine runner (no events emitted yet)
       const instanceId = await runner.createWorkflow(spec);
 
-      // 4. Start the workflow
-      await runner.startWorkflow(instanceId);
-
-      // 5. Add to execution store
+      // 4. Add to stores BEFORE starting (so event handlers find the entry)
       const name = workflow?.local_id ?? spec.local_id ?? 'Workflow';
       const totalSteps = spec.steps?.length ?? 0;
       addActiveWorkflow(instanceId, oid, name, totalSteps);
+      setCurrentWorkflow(instanceId);
 
-      // 6. Also add to workflow store runtime list
       useWorkflowStore.getState().addRuntimeWorkflow({
         instanceId,
         masterOid: oid,
         name,
-        workflowState: 'RUNNING',
-        startedAt: new Date().toISOString(),
+        workflowState: 'IDLE',
+        startedAt: null,
         lastActivityAt: new Date().toISOString(),
       });
 
-      // 7. Navigate to execution screen
+      // 5. Start the workflow (emits WORKFLOW_STARTED → store updates to RUNNING)
+      await runner.startWorkflow(instanceId);
+
+      // 6. Navigate to execution screen
       router.replace(`/execution/${instanceId}` as Href);
     } catch (err) {
       console.error('Failed to start workflow:', err);
@@ -142,7 +143,7 @@ export default function LibraryDetailScreen() {
       );
       setIsStarting(false);
     }
-  }, [oid, isStarting, db, runner, workflow, addActiveWorkflow, router]);
+  }, [oid, isStarting, db, runner, workflow, addActiveWorkflow, setCurrentWorkflow, router]);
 
   // Format downloaded date
   const downloadedDate = useMemo(() => {
