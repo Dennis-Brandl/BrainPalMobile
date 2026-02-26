@@ -126,9 +126,10 @@ None.
 |---|-------------|------|--------|-----------|
 | 001 | Wire engine EventBus to execution store (race condition fix) | 2026-02-25 | a10a55a | [001-wire-engine-eventbus-to-execution-store](./quick/001-wire-engine-eventbus-to-execution-store/) |
 | 002 | Fix INSERT OR REPLACE cascade deletion of steps/connections | 2026-02-25 | 3f9990c | inline fix (no plan needed) |
+| 003 | Add Import button to Library tab (file picker + PackageImporter) | 2026-02-26 | d3e188c | [003-add-import-button-to-library-tab](./quick/003-add-import-button-to-library-tab/) |
 
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed 04-01-PLAN.md (WORKFLOW_PROXY Execution). All Phase 4 plans complete. Ready for Phase 5.
+Stopped at: Completed quick-003 (Add Import button to Library tab). All Phase 4 plans complete. Ready for Phase 5.
 Resume file: None
