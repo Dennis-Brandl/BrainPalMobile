@@ -79,7 +79,8 @@ export class NotificationService {
    * On web, onclick is wired per-notification in sendStepAttention/sendError,
    * so this method returns a no-op cleanup function for consistent interface.
    */
-  setupNotificationTapHandler(_router: { push: (href: string) => void }): { remove: () => void } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setupNotificationTapHandler(_router: { push: (href: any) => void }): { remove: () => void } {
     return { remove: () => {} };
   }
 

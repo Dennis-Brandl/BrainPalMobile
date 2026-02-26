@@ -35,7 +35,9 @@ import {
   SqliteExecutionLoggerRepository,
   IdGenerator,
 } from '../repositories';
+import { useRouter } from 'expo-router';
 import { useExecutionStore } from '../stores/execution-store';
+import { createNotificationService, type NotificationService } from '../services/notification-service';
 
 // ---------------------------------------------------------------------------
 // Context
@@ -71,10 +73,13 @@ export function EngineProvider({ children }: PropsWithChildren) {
   const db = useSQLiteContext();
   const [isReady, setIsReady] = useState(false);
 
+  const router = useRouter();
+
   // Use refs to create instances ONCE (not on every render)
   const eventBusRef = useRef<EngineEventBus | null>(null);
   const runnerRef = useRef<WorkflowRunner | null>(null);
   const configRef = useRef<RunnerConfig | null>(null);
+  const notificationServiceRef = useRef<NotificationService | null>(null);
 
   // Initialize on first render only
   if (!eventBusRef.current) {
@@ -107,6 +112,9 @@ export function EngineProvider({ children }: PropsWithChildren) {
     configRef.current = config;
 
     runnerRef.current = new WorkflowRunner(config);
+
+    // Create notification service (platform-specific: mobile or web)
+    notificationServiceRef.current = createNotificationService(db);
   }
 
   // Wire event bus subscriptions and run crash recovery
@@ -184,6 +192,52 @@ export function EngineProvider({ children }: PropsWithChildren) {
       }),
     );
 
+    // Initialize notification service and subscribe to notification events
+    const notificationService = notificationServiceRef.current!;
+    notificationService.initialize().catch((err) => {
+      console.warn('NotificationService initialization failed:', err);
+    });
+
+    // Subscribe to USER_INPUT_REQUIRED for step attention notifications
+    unsubscribers.push(
+      eventBus.on('USER_INPUT_REQUIRED', (data) => {
+        // Fire-and-forget: don't block the engine
+        (async () => {
+          try {
+            let stepName = 'A step requires your input';
+            const step = await config.stepRepo.getById(data.stepInstanceId);
+            if (step) {
+              try {
+                const parsed = JSON.parse(step.step_json);
+                stepName = parsed.local_id || parsed.description || stepName;
+              } catch {
+                // Use default name
+              }
+            }
+            await notificationService.sendStepAttention(
+              data.workflowInstanceId,
+              data.stepInstanceId,
+              stepName,
+            );
+          } catch (err) {
+            console.warn('Notification send failed:', err);
+          }
+        })();
+      }),
+    );
+
+    // Subscribe to ERROR events for error notifications
+    unsubscribers.push(
+      eventBus.on('ERROR', (data) => {
+        notificationService.sendError(data.source, data.message).catch((err) => {
+          console.warn('Error notification send failed:', err);
+        });
+      }),
+    );
+
+    // Set up notification tap handler for navigation
+    const tapSub = notificationService.setupNotificationTapHandler(router);
+
     // Run crash recovery
     async function runRecovery() {
       try {
@@ -255,8 +309,9 @@ export function EngineProvider({ children }: PropsWithChildren) {
       for (const unsub of unsubscribers) {
         unsub();
       }
+      tapSub.remove();
     };
-  }, [db]);
+  }, [db, router]);
 
   const contextValue: EngineContextValue = {
     runner: runnerRef.current!,

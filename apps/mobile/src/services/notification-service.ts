@@ -100,7 +100,8 @@ export class NotificationService {
    * Set up tap handler that navigates to the workflow execution screen.
    * Returns subscription for cleanup.
    */
-  setupNotificationTapHandler(router: { push: (href: string) => void }): { remove: () => void } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setupNotificationTapHandler(router: { push: (href: any) => void }): { remove: () => void } {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data as {
         workflowInstanceId?: string;
