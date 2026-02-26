@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Users can import a workflow package and execute it step-by-step on any platform -- the execution engine must faithfully walk the workflow graph, render forms correctly, handle branching/resources/nesting, and persist state across crashes.
-**Current focus:** Phase 3: Execution UI
+**Current focus:** Phase 4: Workflow Proxy + Ancillary Features
 
 ## Current Position
 
-Phase: 3 of 5 (Execution UI)
-Plan: 4 of 4 in current phase
-Status: Phase 3 verified (UAT complete, quick fix applied)
-Last activity: 2026-02-25 -- Completed quick task 002: INSERT OR REPLACE cascade deletion fix
+Phase: 4 of 5 (Workflow Proxy + Ancillary Features)
+Plan: 3 of 3 in current phase
+Status: In progress (04-03 complete, 04-01 and 04-02 may be in progress via parallel execution)
+Last activity: 2026-02-26 -- Completed 04-03-PLAN.md (Notifications & Settings)
 
-Progress: [############........] 12/12 Plans (3/5 Phases complete)
+Progress: [#############.......] 13/15 Plans (3/5 Phases complete, Phase 4 in progress)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
+- Total plans completed: 13
 - Average duration: 5.5 min
-- Total execution time: 1.10 hours
+- Total execution time: 1.17 hours
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: [############........] 12/12 Plans (3/5 Phases complete)
 | 01-foundation | 3/3 | 13 min | 4.3 min |
 | 02-engine-core | 5/5 | 35 min | 7.0 min |
 | 03-execution-ui | 4/4 | 22 min | 5.5 min |
+| 04-workflow-proxy-ancillary | 1/3 | 6 min | 6.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-05 (12 min), 03-01 (8 min), 03-02 (5 min), 03-03 (5 min), 03-04 (4 min)
-- Trend: stable/accelerating
+- Last 5 plans: 03-01 (8 min), 03-02 (5 min), 03-03 (5 min), 03-04 (4 min), 04-03 (6 min)
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -94,6 +95,11 @@ Recent decisions affecting current work:
 - [03-04]: StateControls uses Modal overlay for dropdown menu (v1, no third-party popover)
 - [03-04]: Terminal workflow states auto-navigate back after 2s delay
 - [03-04]: STOPPED state shows only Abort in menu (Resume-from-STOPPED deferred)
+- [04-03]: TIMEOUT preference hidden from Settings UI since engine has no TIMEOUT event in EngineEventMap
+- [04-03]: channelId goes on trigger object (not content) per expo-notifications SDK 54 types
+- [04-03]: Router parameter typed as { push: (href: any) => void } for expo-router typed routes compatibility
+- [04-03]: Web notifications only fire when document.hidden (tab backgrounded) -- no in-app toast for v1
+- [04-03]: Notification event handlers use fire-and-forget pattern to avoid blocking engine
 
 ### Pending Todos
 
@@ -112,6 +118,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25
-Stopped at: Phase 3 UAT complete (11/13 pass, 2 skipped), all gaps resolved. Ready for Phase 4.
+Last session: 2026-02-26
+Stopped at: Completed 04-03-PLAN.md (Notifications & Settings). Phase 4 plans 04-01 and 04-02 may be executing in parallel.
 Resume file: None
