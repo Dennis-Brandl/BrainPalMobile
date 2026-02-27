@@ -4,7 +4,7 @@
 // user input submission and workflow lifecycle commands.
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -18,7 +18,6 @@ import { StepCarousel } from '../../src/components/carousel/StepCarousel';
 import { DotIndicator } from '../../src/components/carousel/DotIndicator';
 import { ExecutionHeader } from '../../src/components/execution/ExecutionHeader';
 import { StateControls } from '../../src/components/execution/StateControls';
-import { ConfirmDialog } from '../../src/components/execution/ConfirmDialog';
 import { WaitingStateBox } from '../../src/components/workflow/WaitingStateBox';
 
 // ---------------------------------------------------------------------------
@@ -103,11 +102,7 @@ export default function ExecutionScreen() {
     };
   }, [db, masterOid]);
 
-  // -----------------------------------------------------------------------
-  // Abort confirmation dialog
-  // -----------------------------------------------------------------------
-
-  const [showAbortConfirm, setShowAbortConfirm] = useState(false);
+  // (Abort confirmation handled via Alert.alert -- no state needed)
 
   // -----------------------------------------------------------------------
   // Auto-advance: adjust index when active steps change
@@ -205,25 +200,29 @@ export default function ExecutionScreen() {
   }, [runner, instanceId, router]);
 
   const handleAbort = useCallback(() => {
-    setShowAbortConfirm(true);
-  }, []);
-
-  const confirmAbort = useCallback(async () => {
-    setShowAbortConfirm(false);
-    if (!instanceId) return;
-    try {
-      await runner.abort(instanceId);
-      if (router.canGoBack()) {
-        router.back();
-      }
-    } catch (err) {
-      console.warn('ExecutionScreen: abort failed', err);
-    }
+    Alert.alert(
+      'Abort Workflow',
+      'Are you sure you want to abort? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Abort',
+          style: 'destructive',
+          onPress: async () => {
+            if (!instanceId) return;
+            try {
+              await runner.abort(instanceId);
+              if (router.canGoBack()) {
+                router.back();
+              }
+            } catch (err) {
+              console.warn('ExecutionScreen: abort failed', err);
+            }
+          },
+        },
+      ],
+    );
   }, [runner, instanceId, router]);
-
-  const cancelAbort = useCallback(() => {
-    setShowAbortConfirm(false);
-  }, []);
 
   const handleBack = useCallback(() => {
     if (router.canGoBack()) {
@@ -286,16 +285,6 @@ export default function ExecutionScreen() {
         )}
       </View>
 
-      <ConfirmDialog
-        visible={showAbortConfirm}
-        title="Abort Workflow"
-        message="Are you sure you want to abort this workflow? This action cannot be undone."
-        confirmLabel="Abort"
-        cancelLabel="Cancel"
-        destructive
-        onConfirm={confirmAbort}
-        onCancel={cancelAbort}
-      />
     </SafeAreaView>
   );
 }

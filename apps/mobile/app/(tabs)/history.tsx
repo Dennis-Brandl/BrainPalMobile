@@ -1,8 +1,9 @@
 // History tab: Lists completed/aborted/stopped workflows with pull-to-refresh
 // and individual delete via confirmation dialog.
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
+  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -16,7 +17,6 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors, typography, spacing } from '@brainpal/ui';
 import { useCompletedWorkflows, useDeleteWorkflow, type HistoryWorkflow } from '../../src/hooks/useHistory';
 import { StateBadge } from '../../src/components/workflow/StateBadge';
-import { ConfirmDialog } from '../../src/components/execution/ConfirmDialog';
 
 // ---------------------------------------------------------------------------
 // Format date for display
@@ -42,16 +42,6 @@ export default function HistoryScreen() {
   const router = useRouter();
   const { workflows, loading, refresh } = useCompletedWorkflows();
   const deleteWorkflow = useDeleteWorkflow();
-
-  // Delete confirmation state
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-
-  const handleDelete = useCallback(async () => {
-    if (!deleteTarget) return;
-    await deleteWorkflow(deleteTarget);
-    setDeleteTarget(null);
-    refresh();
-  }, [deleteTarget, deleteWorkflow, refresh]);
 
   const handlePress = useCallback(
     (instanceId: string) => {
@@ -82,14 +72,30 @@ export default function HistoryScreen() {
         </View>
         <Pressable
           style={styles.deleteButton}
-          onPress={() => setDeleteTarget(item.instanceId)}
+          onPress={() => {
+            Alert.alert(
+              'Delete Workflow',
+              'Delete this workflow run from history?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Delete',
+                  style: 'destructive',
+                  onPress: async () => {
+                    await deleteWorkflow(item.instanceId);
+                    refresh();
+                  },
+                },
+              ],
+            );
+          }}
           hitSlop={8}
         >
           <FontAwesome name="trash-o" size={18} color={colors.textSecondary} />
         </Pressable>
       </Pressable>
     ),
-    [handlePress],
+    [handlePress, deleteWorkflow, refresh],
   );
 
   return (
@@ -118,16 +124,6 @@ export default function HistoryScreen() {
             </View>
           )
         }
-      />
-
-      <ConfirmDialog
-        visible={deleteTarget !== null}
-        title="Delete Workflow"
-        message="Delete this workflow and its execution history?"
-        confirmLabel="Delete"
-        destructive
-        onConfirm={handleDelete}
-        onCancel={() => setDeleteTarget(null)}
       />
     </SafeAreaView>
   );

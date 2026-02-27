@@ -1,11 +1,10 @@
 // Settings screen: Notification preferences, storage info, and app metadata.
 
 import { useCallback, useEffect, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { colors, typography, spacing } from '@brainpal/ui';
-import { ConfirmDialog } from '../../src/components/execution/ConfirmDialog';
 import { useNotificationPrefs } from '../../src/hooks/useNotificationPrefs';
 import { useStorageCounts } from '../../src/hooks/useStorageCounts';
 
@@ -55,8 +54,6 @@ export default function SettingsScreen() {
   const [dbStatus, setDbStatus] = useState<DbStatus | null>(null);
   const [dbError, setDbError] = useState<string | null>(null);
 
-  // Confirm dialog for clear completed
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
@@ -125,7 +122,6 @@ export default function SettingsScreen() {
       console.warn('Failed to clear completed workflows:', err);
     } finally {
       setClearing(false);
-      setShowClearConfirm(false);
     }
   }, [db, refreshCounts]);
 
@@ -192,7 +188,20 @@ export default function SettingsScreen() {
             styles.clearButton,
             (!counts || counts.completed === 0 || clearing) && styles.clearButtonDisabled,
           ]}
-          onPress={() => setShowClearConfirm(true)}
+          onPress={() => {
+            Alert.alert(
+              'Clear Completed Workflows',
+              'This will remove all completed workflow runs from history. Continue?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Clear',
+                  style: 'destructive',
+                  onPress: handleClearCompleted,
+                },
+              ],
+            );
+          }}
           disabled={!counts || counts.completed === 0 || clearing}
         >
           <Text
@@ -235,17 +244,6 @@ export default function SettingsScreen() {
           )}
         </View>
       </ScrollView>
-
-      <ConfirmDialog
-        visible={showClearConfirm}
-        title="Clear Completed Workflows"
-        message="Delete all completed workflows and their execution history? This cannot be undone."
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-        destructive
-        onConfirm={handleClearCompleted}
-        onCancel={() => setShowClearConfirm(false)}
-      />
     </SafeAreaView>
   );
 }

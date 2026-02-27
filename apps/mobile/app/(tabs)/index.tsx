@@ -104,7 +104,10 @@ export default function HomeScreen() {
             disabled={isImporting}
           >
             {isImporting ? (
-              <ActivityIndicator size="small" color={colors.primary} />
+              <>
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={styles.importButtonText}>Importing...</Text>
+              </>
             ) : (
               <>
                 <FontAwesome name="download" size={16} color={colors.primary} />
