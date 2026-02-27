@@ -99,11 +99,11 @@ Plans:
   1. User can export a completed workflow's execution report as a PDF document on mobile (via share sheet) and as a file download on web
   2. App provides progress feedback during long operations (ZIP import) and confirmation dialogs before destructive actions (STOP, ABORT, delete workflow)
   3. Execution history loads efficiently with pagination (no memory issues on workflows with hundreds of log entries); Zustand selectors prevent unnecessary re-renders across workflow boundaries
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: PDF export implementation (mobile + web paths)
-- [ ] 05-02: Performance tuning and production hardening
+- [ ] 05-01: PDF export service (mobile + web), HTML report template, Export button on history detail
+- [ ] 05-02: Alert.alert confirmation migration, import progress indicator, history pagination, Zustand selector optimization
 
 ## Progress
 
