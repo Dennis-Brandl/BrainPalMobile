@@ -1,7 +1,7 @@
 // useHistory: SQLite query hooks for the History tab and history detail screen.
 // Provides completed workflow listing, step/audit detail, and individual deletion.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSQLiteContext } from 'expo-sqlite';
 import type { WorkflowState, StepState, StepType } from '@brainpal/engine';
 import type { RuntimeWorkflowRow, RuntimeStepRow, ExecutionLogRow } from '@brainpal/storage';
@@ -28,6 +28,16 @@ export interface HistoryStep {
   resolvedInputs: string | null;
   resolvedOutputs: string | null;
   userInputs: string | null;
+  isChildStep: boolean;
+  childWorkflowName?: string;
+}
+
+export interface WorkflowMeta {
+  workflowName: string;
+  state: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  duration: string;
 }
 
 export interface HistoryLogEntry {
@@ -103,38 +113,72 @@ function computeDuration(startIso: string | null, endIso: string | null): string
 }
 
 // ---------------------------------------------------------------------------
-// Hook: useCompletedWorkflows
+// Hook: useCompletedWorkflows (paginated)
 // ---------------------------------------------------------------------------
+
+const PAGE_SIZE = 20;
+
+function mapWorkflowRow(row: RuntimeWorkflowRow): HistoryWorkflow {
+  return {
+    instanceId: row.instance_id,
+    name: parseWorkflowName(row.specification_json),
+    state: row.workflow_state as WorkflowState,
+    startedAt: row.started_at,
+    completedAt: row.completed_at,
+    duration: computeDuration(row.started_at, row.completed_at),
+  };
+}
+
+const COMPLETED_QUERY = `SELECT instance_id, master_workflow_oid, workflow_state, specification_json,
+        created_at, started_at, completed_at
+ FROM runtime_workflows
+ WHERE workflow_state IN ('COMPLETED', 'ABORTED', 'STOPPED')
+   AND parent_workflow_instance_id IS NULL
+ ORDER BY completed_at DESC`;
 
 export function useCompletedWorkflows() {
   const db = useSQLiteContext();
   const [workflows, setWorkflows] = useState<HistoryWorkflow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const offsetRef = useRef(0);
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loading) return;
+    setLoading(true);
+    try {
+      const rows = await db.getAllAsync<RuntimeWorkflowRow>(
+        `${COMPLETED_QUERY} LIMIT ? OFFSET ?`,
+        [PAGE_SIZE, offsetRef.current],
+      );
+      if (rows.length < PAGE_SIZE) setHasMore(false);
+      offsetRef.current += rows.length;
+      const mapped = rows.map(mapWorkflowRow);
+      setWorkflows((prev) => [...prev, ...mapped]);
+    } catch (err) {
+      console.warn('useCompletedWorkflows: loadMore failed', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [db, hasMore, loading]);
 
   const refresh = useCallback(async () => {
+    // Reset pagination on refresh (prevents offset inconsistency after delete)
+    offsetRef.current = 0;
+    setHasMore(true);
+    setWorkflows([]);
+    setLoading(true);
     try {
-      setLoading(true);
       const rows = await db.getAllAsync<RuntimeWorkflowRow>(
-        `SELECT instance_id, master_workflow_oid, workflow_state, specification_json,
-                created_at, started_at, completed_at
-         FROM runtime_workflows
-         WHERE workflow_state IN ('COMPLETED', 'ABORTED', 'STOPPED')
-           AND parent_workflow_instance_id IS NULL
-         ORDER BY completed_at DESC`,
+        `${COMPLETED_QUERY} LIMIT ?`,
+        [PAGE_SIZE],
       );
-
-      const mapped: HistoryWorkflow[] = rows.map((row) => ({
-        instanceId: row.instance_id,
-        name: parseWorkflowName(row.specification_json),
-        state: row.workflow_state as WorkflowState,
-        startedAt: row.started_at,
-        completedAt: row.completed_at,
-        duration: computeDuration(row.started_at, row.completed_at),
-      }));
-
+      if (rows.length < PAGE_SIZE) setHasMore(false);
+      offsetRef.current = rows.length;
+      const mapped = rows.map(mapWorkflowRow);
       setWorkflows(mapped);
     } catch (err) {
-      console.warn('useCompletedWorkflows: failed to load', err);
+      console.warn('useCompletedWorkflows: refresh failed', err);
     } finally {
       setLoading(false);
     }
@@ -144,7 +188,7 @@ export function useCompletedWorkflows() {
     refresh();
   }, [refresh]);
 
-  return { workflows, loading, refresh };
+  return { workflows, loading, hasMore, loadMore, refresh };
 }
 
 // ---------------------------------------------------------------------------
@@ -155,6 +199,7 @@ export function useWorkflowHistory(instanceId: string) {
   const db = useSQLiteContext();
   const [steps, setSteps] = useState<HistoryStep[]>([]);
   const [logEntries, setLogEntries] = useState<HistoryLogEntry[]>([]);
+  const [workflowMeta, setWorkflowMeta] = useState<WorkflowMeta | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -162,6 +207,36 @@ export function useWorkflowHistory(instanceId: string) {
 
     async function load() {
       try {
+        // Query workflow metadata for the parent workflow
+        const wfRow = await db.getFirstAsync<RuntimeWorkflowRow>(
+          `SELECT * FROM runtime_workflows WHERE instance_id = ?`,
+          [instanceId],
+        );
+
+        if (cancelled) return;
+
+        const meta: WorkflowMeta = {
+          workflowName: wfRow ? parseWorkflowName(wfRow.specification_json) : 'Untitled Workflow',
+          state: wfRow?.workflow_state ?? 'COMPLETED',
+          startedAt: wfRow?.started_at ?? null,
+          completedAt: wfRow?.completed_at ?? null,
+          duration: computeDuration(wfRow?.started_at ?? null, wfRow?.completed_at ?? null),
+        };
+
+        // Build a map of child workflow instance_id -> child workflow name
+        const childWfRows = await db.getAllAsync<RuntimeWorkflowRow>(
+          `SELECT instance_id, specification_json FROM runtime_workflows
+           WHERE parent_workflow_instance_id = ?`,
+          [instanceId],
+        );
+
+        if (cancelled) return;
+
+        const childNameMap = new Map<string, string>();
+        for (const cw of childWfRows) {
+          childNameMap.set(cw.instance_id, parseWorkflowName(cw.specification_json));
+        }
+
         // Query steps: include parent + child workflow steps, exclude control-flow types
         const stepRows = await db.getAllAsync<RuntimeStepRow>(
           `SELECT s.* FROM runtime_steps s
@@ -174,16 +249,21 @@ export function useWorkflowHistory(instanceId: string) {
 
         if (cancelled) return;
 
-        const mappedSteps: HistoryStep[] = stepRows.map((row) => ({
-          instanceId: row.instance_id,
-          name: parseStepName(row.step_json),
-          stepType: row.step_type as StepType,
-          state: row.step_state as StepState,
-          duration: computeDuration(row.activated_at, row.completed_at),
-          resolvedInputs: row.resolved_inputs_json,
-          resolvedOutputs: row.resolved_outputs_json,
-          userInputs: row.user_inputs_json,
-        }));
+        const mappedSteps: HistoryStep[] = stepRows.map((row) => {
+          const isChild = row.workflow_instance_id !== instanceId;
+          return {
+            instanceId: row.instance_id,
+            name: parseStepName(row.step_json),
+            stepType: row.step_type as StepType,
+            state: row.step_state as StepState,
+            duration: computeDuration(row.activated_at, row.completed_at),
+            resolvedInputs: row.resolved_inputs_json,
+            resolvedOutputs: row.resolved_outputs_json,
+            userInputs: row.user_inputs_json,
+            isChildStep: isChild,
+            childWorkflowName: isChild ? childNameMap.get(row.workflow_instance_id) : undefined,
+          };
+        });
 
         // Query audit log: include parent + child workflow entries
         const logRows = await db.getAllAsync<ExecutionLogRow>(
@@ -207,6 +287,7 @@ export function useWorkflowHistory(instanceId: string) {
           timestamp: row.timestamp,
         }));
 
+        setWorkflowMeta(meta);
         setSteps(mappedSteps);
         setLogEntries(mappedLogs);
       } catch (err) {
@@ -224,7 +305,7 @@ export function useWorkflowHistory(instanceId: string) {
     };
   }, [db, instanceId]);
 
-  return { steps, logEntries, loading };
+  return { steps, logEntries, workflowMeta, loading };
 }
 
 // ---------------------------------------------------------------------------

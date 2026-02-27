@@ -3,6 +3,7 @@
 
 import React, { useCallback } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Pressable,
@@ -40,7 +41,7 @@ function formatDate(iso: string | null): string {
 
 export default function HistoryScreen() {
   const router = useRouter();
-  const { workflows, loading, refresh } = useCompletedWorkflows();
+  const { workflows, loading, hasMore, loadMore, refresh } = useCompletedWorkflows();
   const deleteWorkflow = useDeleteWorkflow();
 
   const handlePress = useCallback(
@@ -105,8 +106,15 @@ export default function HistoryScreen() {
         data={workflows}
         keyExtractor={(item) => item.instanceId}
         renderItem={renderItem}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
         refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={refresh} />
+          <RefreshControl refreshing={loading && workflows.length === 0} onRefresh={refresh} />
+        }
+        ListFooterComponent={
+          loading && workflows.length > 0 ? (
+            <ActivityIndicator style={styles.footerLoader} color={colors.primary} />
+          ) : null
         }
         ListEmptyComponent={
           loading ? null : (
@@ -181,6 +189,9 @@ const styles = StyleSheet.create({
   deleteButton: {
     paddingLeft: spacing.md,
     paddingVertical: spacing.sm,
+  },
+  footerLoader: {
+    paddingVertical: spacing.lg,
   },
   emptyContainer: {
     alignItems: 'center',
