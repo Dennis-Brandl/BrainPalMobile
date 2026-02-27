@@ -11,17 +11,17 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 
 Phase: 5 of 5 (Polish & PDF Export)
 Plan: 2 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-26 -- Completed 05-02-PLAN.md
+Status: Phase 5 complete -- All plans executed
+Last activity: 2026-02-26 -- Completed 05-01-PLAN.md
 
-Progress: [################################] 16/17 Plans (Phase 5: 1/2 complete)
+Progress: [##################################] 17/17 Plans (5/5 Phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
-- Average duration: 5.4 min
-- Total execution time: 1.47 hours
+- Total plans completed: 17
+- Average duration: 5.5 min
+- Total execution time: 1.58 hours
 
 **By Phase:**
 
@@ -31,10 +31,10 @@ Progress: [################################] 16/17 Plans (Phase 5: 1/2 complete)
 | 02-engine-core | 5/5 | 35 min | 7.0 min |
 | 03-execution-ui | 4/4 | 22 min | 5.5 min |
 | 04-workflow-proxy-ancillary | 3/3 | 20 min | 6.7 min |
-| 05-polish-pdf-export | 1/2 | 4 min | 4.0 min |
+| 05-polish-pdf-export | 2/2 | 11 min | 5.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-04 (4 min), 04-03 (6 min), 04-02 (4 min), 04-01 (10 min), 05-02 (4 min)
+- Last 5 plans: 04-03 (6 min), 04-02 (4 min), 04-01 (10 min), 05-02 (4 min), 05-01 (7 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -115,6 +115,10 @@ Recent decisions affecting current work:
 - [05-02]: No useShallow needed: all Zustand selectors use single-value lookups (no object creation), already referentially stable
 - [05-02]: Pagination offset reset on refresh/delete to prevent stale OFFSET after row removal
 - [05-02]: Alert.alert for destructive confirmations -- native feel on mobile, falls through to window.confirm() on web (acceptable)
+- [05-01]: Shared pdf-report-template.ts extracted to avoid duplicating HTML builder between mobile and web services
+- [05-01]: New expo-file-system File/Paths API (SDK 54) used for PDF file rename, not legacy moveAsync
+- [05-01]: Dynamic import in useExportPdf for platform-specific service resolution via Metro
+- [05-01]: workflowMeta sourced from direct runtime_workflows query (more accurate than deriving from step names)
 
 ### Pending Todos
 
@@ -135,5 +139,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed 05-02-PLAN.md (UX polish: Alert.alert confirmations, paginated history, import progress)
+Stopped at: All 17 plans complete across 5 phases. Project execution finished.
 Resume file: None
