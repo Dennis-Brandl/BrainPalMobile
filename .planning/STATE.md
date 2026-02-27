@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 
 ## Current Position
 
-Phase: 4 of 5 (Workflow Proxy + Ancillary Features)
-Plan: 3 of 3 in current phase
-Status: Phase 4 verified (UAT complete: 9/10 passed, 1 low-severity deferred)
-Last activity: 2026-02-26 -- Phase 4 UAT complete
+Phase: 5 of 5 (Polish & PDF Export)
+Plan: 2 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-26 -- Completed 05-02-PLAN.md
 
-Progress: [####################] 15/15 Plans (4/5 Phases complete, Phase 4 complete)
+Progress: [################################] 16/17 Plans (Phase 5: 1/2 complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
-- Average duration: 5.5 min
-- Total execution time: 1.40 hours
+- Total plans completed: 16
+- Average duration: 5.4 min
+- Total execution time: 1.47 hours
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: [####################] 15/15 Plans (4/5 Phases complete, Phase 4 compl
 | 02-engine-core | 5/5 | 35 min | 7.0 min |
 | 03-execution-ui | 4/4 | 22 min | 5.5 min |
 | 04-workflow-proxy-ancillary | 3/3 | 20 min | 6.7 min |
+| 05-polish-pdf-export | 1/2 | 4 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-03 (5 min), 03-04 (4 min), 04-03 (6 min), 04-02 (4 min), 04-01 (10 min)
-- Trend: stable (04-01 slightly longer due to complex nested workflow execution)
+- Last 5 plans: 03-04 (4 min), 04-03 (6 min), 04-02 (4 min), 04-01 (10 min), 05-02 (4 min)
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -111,6 +112,9 @@ Recent decisions affecting current work:
 - [04-01]: Abort/stop propagate to children FIRST, then clean up parent (correct teardown order)
 - [04-01]: EngineProvider parent cache pre-populated during crash recovery to avoid race conditions
 - [04-phase]: No engine-level timeouts -- workflows are long-lived (days/weeks); timeouts come from Environment Actions (future v2 scope)
+- [05-02]: No useShallow needed: all Zustand selectors use single-value lookups (no object creation), already referentially stable
+- [05-02]: Pagination offset reset on refresh/delete to prevent stale OFFSET after row removal
+- [05-02]: Alert.alert for destructive confirmations -- native feel on mobile, falls through to window.confirm() on web (acceptable)
 
 ### Pending Todos
 
@@ -131,5 +135,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Phase 4 UAT complete (9/10 passed). 3 critical bugs fixed during testing (FK constraint, form data loss, Yes/No routing). Ready for Phase 5.
+Stopped at: Completed 05-02-PLAN.md (UX polish: Alert.alert confirmations, paginated history, import progress)
 Resume file: None
