@@ -1,7 +1,7 @@
 // History detail screen: Shows step summary cards with toggle to full audit trail.
 // Navigated from History tab via router.push('/execution/history/[instanceId]').
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors, typography, spacing } from '@brainpal/ui';
 import { StateBadge } from '../../../src/components/workflow/StateBadge';
 import {
@@ -18,7 +19,8 @@ import {
   type HistoryStep,
   type HistoryLogEntry,
 } from '../../../src/hooks/useHistory';
-import type { StepState } from '@brainpal/engine';
+import { useExportPdf, type ReportStep } from '../../../src/hooks/useExportPdf';
+import type { StepState, WorkflowState } from '@brainpal/engine';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -159,23 +161,38 @@ function LogEntryRow({ entry }: { entry: HistoryLogEntry }) {
 
 export default function HistoryDetailScreen() {
   const { instanceId } = useLocalSearchParams<{ instanceId: string }>();
-  const { steps, logEntries, loading } = useWorkflowHistory(instanceId ?? '');
+  const { steps, logEntries, workflowMeta, loading } = useWorkflowHistory(instanceId ?? '');
+  const { exportReport, isExporting } = useExportPdf();
   const [showAudit, setShowAudit] = useState(false);
 
-  // Derive workflow name from first step or fallback
-  const workflowName = useMemo(() => {
-    if (steps.length > 0) return steps[0].name;
-    return 'Workflow';
-  }, [steps]);
+  // Use workflowMeta for name and state, with fallbacks
+  const workflowName = workflowMeta?.workflowName ?? 'Workflow';
+  const overallState = (workflowMeta?.state ?? 'COMPLETED') as WorkflowState;
 
-  // Derive overall state from steps
-  const overallState = useMemo(() => {
-    if (steps.length === 0) return 'COMPLETED';
-    // Check if any step aborted
-    if (steps.some((s) => s.state === 'ABORTED')) return 'ABORTED';
-    if (steps.some((s) => s.state === 'STOPPING')) return 'STOPPED';
-    return 'COMPLETED';
-  }, [steps]);
+  const handleExportPdf = useCallback(() => {
+    if (!workflowMeta || !instanceId) return;
+
+    const reportSteps: ReportStep[] = steps.map((s) => ({
+      name: s.name,
+      stepType: s.stepType,
+      state: s.state,
+      duration: s.duration,
+      userInputs: s.userInputs,
+      resolvedOutputs: s.resolvedOutputs,
+      isChildStep: s.isChildStep,
+      childWorkflowName: s.childWorkflowName,
+    }));
+
+    exportReport({
+      workflowName: workflowMeta.workflowName,
+      instanceId,
+      state: workflowMeta.state,
+      startedAt: workflowMeta.startedAt,
+      completedAt: workflowMeta.completedAt,
+      duration: workflowMeta.duration,
+      steps: reportSteps,
+    });
+  }, [workflowMeta, instanceId, steps, exportReport]);
 
   if (loading) {
     return (
@@ -201,12 +218,24 @@ export default function HistoryDetailScreen() {
         </Text>
       </View>
 
-      {/* Toggle button */}
-      <Pressable style={styles.toggleButton} onPress={() => setShowAudit(!showAudit)}>
-        <Text style={styles.toggleText}>
-          {showAudit ? 'Show Summary' : 'Show Details'}
-        </Text>
-      </Pressable>
+      {/* Action bar: Toggle + Export */}
+      <View style={styles.actionBar}>
+        <Pressable style={styles.toggleButton} onPress={() => setShowAudit(!showAudit)}>
+          <Text style={styles.toggleText}>
+            {showAudit ? 'Show Summary' : 'Show Details'}
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[styles.exportButton, isExporting && styles.exportButtonDisabled]}
+          onPress={handleExportPdf}
+          disabled={isExporting}
+        >
+          <FontAwesome name="file-pdf-o" size={14} color="#FFFFFF" />
+          <Text style={styles.exportButtonText}>
+            {isExporting ? 'Exporting...' : 'Export PDF'}
+          </Text>
+        </Pressable>
+      </View>
 
       {/* Content */}
       {showAudit ? (
@@ -276,16 +305,39 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
   },
-  toggleButton: {
+  actionBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
+  toggleButton: {
+    paddingVertical: spacing.xs,
+  },
   toggleText: {
     ...typography.body,
     color: colors.primary,
+    fontWeight: '600',
+  },
+  exportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    gap: 6,
+  },
+  exportButtonDisabled: {
+    opacity: 0.5,
+  },
+  exportButtonText: {
+    ...typography.caption,
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   listContent: {
