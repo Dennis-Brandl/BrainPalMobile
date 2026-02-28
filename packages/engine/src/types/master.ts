@@ -179,8 +179,8 @@ export interface FormElementSpec {
   color?: string;
   align?: string;
   src?: string;
-  options?: FormElementOption[];
-  /** Button display label */
+  options?: (FormElementOption | string)[];
+  /** Display label for buttons, inputs, and radio groups */
   label?: string;
   /** Button output value (e.g., "true"/"false" for Yes/No) */
   outputValue?: string;

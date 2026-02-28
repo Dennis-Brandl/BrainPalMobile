@@ -8,8 +8,16 @@ import { typography } from '@brainpal/ui/src/theme/typography';
 import { spacing } from '@brainpal/ui/src/theme/spacing';
 import type { ElementProps } from './types';
 
+function normalizeOption(option: unknown): { label: string; value: string } {
+  if (typeof option === 'string') return { label: option, value: option };
+  const obj = option as { label?: string; value?: string };
+  return { label: obj.label ?? '', value: obj.value ?? '' };
+}
+
 export function RadioButtonElement({ element, value, onChange }: ElementProps) {
-  const options = element.options ?? [];
+  const rawOptions = element.options ?? [];
+  const options = rawOptions.map(normalizeOption);
+  const groupLabel = element.label;
 
   if (options.length === 0) {
     return (
@@ -21,6 +29,9 @@ export function RadioButtonElement({ element, value, onChange }: ElementProps) {
 
   return (
     <View style={styles.container}>
+      {groupLabel != null && groupLabel !== '' && (
+        <Text style={styles.groupLabel}>{groupLabel}</Text>
+      )}
       {options.map((option) => {
         const isSelected = value === option.value;
         return (
@@ -32,7 +43,7 @@ export function RadioButtonElement({ element, value, onChange }: ElementProps) {
             <View style={[styles.radio, isSelected && styles.radioSelected]}>
               {isSelected && <View style={styles.radioInner} />}
             </View>
-            <Text style={styles.label}>{option.label}</Text>
+            <Text style={styles.optionLabel}>{option.label}</Text>
           </Pressable>
         );
       })}
@@ -68,7 +79,12 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: colors.primary,
   },
-  label: {
+  groupLabel: {
+    ...typography.caption,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  optionLabel: {
     ...typography.body,
     color: colors.textPrimary,
     marginLeft: spacing.sm,

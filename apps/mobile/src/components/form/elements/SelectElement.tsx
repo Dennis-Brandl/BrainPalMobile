@@ -16,9 +16,15 @@ import { typography } from '@brainpal/ui/src/theme/typography';
 import { spacing } from '@brainpal/ui/src/theme/spacing';
 import type { ElementProps } from './types';
 
+function normalizeOption(option: unknown): { label: string; value: string } {
+  if (typeof option === 'string') return { label: option, value: option };
+  const obj = option as { label?: string; value?: string };
+  return { label: obj.label ?? '', value: obj.value ?? '' };
+}
+
 export function SelectElement({ element, value, onChange }: ElementProps) {
   const [modalVisible, setModalVisible] = useState(false);
-  const options = element.options ?? [];
+  const options = (element.options ?? []).map(normalizeOption);
   const placeholder = element.content?.plainText ?? 'Select...';
 
   const selectedLabel = options.find((o) => o.value === value)?.label ?? value ?? '';

@@ -1,7 +1,7 @@
 // InputElement: Single-line text input with border styling.
 
 import React from 'react';
-import { TextInput, View, StyleSheet } from 'react-native';
+import { Text, TextInput, View, StyleSheet } from 'react-native';
 import { colors } from '@brainpal/ui/src/theme/colors';
 import { typography } from '@brainpal/ui/src/theme/typography';
 import { spacing } from '@brainpal/ui/src/theme/spacing';
@@ -9,9 +9,13 @@ import type { ElementProps } from './types';
 
 export function InputElement({ element, value, onChange }: ElementProps) {
   const placeholder = element.placeholder ?? element.content?.plainText ?? '';
+  const label = element.label;
 
   return (
     <View style={styles.container}>
+      {label != null && label !== '' && (
+        <Text style={styles.label}>{label}</Text>
+      )}
       <TextInput
         style={[
           styles.input,
@@ -30,6 +34,11 @@ export function InputElement({ element, value, onChange }: ElementProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  label: {
+    ...typography.caption,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
   input: {
     flex: 1,

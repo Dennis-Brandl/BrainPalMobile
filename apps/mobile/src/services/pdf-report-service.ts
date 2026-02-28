@@ -34,6 +34,9 @@ export async function exportPdf(data: ReportData): Promise<void> {
 
   // Use new expo-file-system File API to move/rename
   const dest = new File(Paths.cache, filename);
+  if (dest.exists) {
+    dest.delete();
+  }
   const src = new File(uri);
   src.move(dest);
 
