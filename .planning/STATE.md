@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 6 of 7 (Pause/Resume Fix + Crash Recovery)
-Plan: 0 of ? in current phase (needs planning)
-Status: GAP CLOSURE -- Phases 6-7 added from v1.0 milestone audit
-Last activity: 2026-03-01 -- Gap closure phases created from audit
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-03-01 -- Completed 06-01-PLAN.md (Pause/Resume Event Gap Fix)
 
-Progress: [##################################--] 17/? Plans (5/7 Phases complete)
+Progress: [###################################-] 18/19 Plans (5/7 Phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
-- Average duration: 5.5 min
-- Total execution time: 1.58 hours
+- Total plans completed: 18
+- Average duration: 5.4 min
+- Total execution time: 1.63 hours
 
 **By Phase:**
 
@@ -32,9 +32,10 @@ Progress: [##################################--] 17/? Plans (5/7 Phases complete
 | 03-execution-ui | 4/4 | 22 min | 5.5 min |
 | 04-workflow-proxy-ancillary | 3/3 | 20 min | 6.7 min |
 | 05-polish-pdf-export | 2/2 | 11 min | 5.5 min |
+| 06-pause-resume-fix-crash-recovery | 1/2 | 3 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-03 (6 min), 04-02 (4 min), 04-01 (10 min), 05-02 (4 min), 05-01 (7 min)
+- Last 5 plans: 04-02 (4 min), 04-01 (10 min), 05-02 (4 min), 05-01 (7 min), 06-01 (3 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -119,6 +120,9 @@ Recent decisions affecting current work:
 - [05-01]: New expo-file-system File/Paths API (SDK 54) used for PDF file rename, not legacy moveAsync
 - [05-01]: Dynamic import in useExportPdf for platform-specific service resolution via Metro
 - [05-01]: workflowMeta sourced from direct runtime_workflows query (more accurate than deriving from step names)
+- [06-01]: WORKFLOW_PAUSED added to LogEventType; WORKFLOW_RESUMED already existed (used by crash recovery logging)
+- [06-01]: Both pause and resume emit for ALL workflows (parent and child) matching existing start/stop/abort pattern
+- [06-01]: No removeActiveWorkflow/setTimeout for pause/resume (workflow stays active, unlike stop/abort)
 
 ### Pending Todos
 
@@ -139,5 +143,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-01
-Stopped at: All 5 phases complete. Milestone finalized. User skipped retest, approved Phase 5.
-Resume file: none
+Stopped at: Completed 06-01-PLAN.md (Pause/Resume Event Gap Fix)
+Resume file: .planning/phases/06-pause-resume-fix-crash-recovery/06-02-PLAN.md
