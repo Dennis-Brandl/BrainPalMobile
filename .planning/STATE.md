@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 7 of 7 (UI Cleanup + Dead Code Removal)
-Plan: 0 of ? in current phase (needs planning)
-Status: GAP CLOSURE -- Phase 6 complete, Phase 7 pending
-Last activity: 2026-03-01 -- Completed Phase 6 (Pause/Resume Fix + Crash Recovery)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-03-01 -- Completed 07-01-PLAN.md (Execute Tab + Dead Code Cleanup)
 
-Progress: [####################################] 19/19 Plans (6/7 Phases complete)
+Progress: [######################################] 20/21 Plans (6/7 Phases complete, 07-01 done)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19
-- Average duration: 5.5 min
-- Total execution time: 1.75 hours
+- Total plans completed: 20
+- Average duration: 5.4 min
+- Total execution time: 1.82 hours
 
 **By Phase:**
 
@@ -33,9 +33,10 @@ Progress: [####################################] 19/19 Plans (6/7 Phases complet
 | 04-workflow-proxy-ancillary | 3/3 | 20 min | 6.7 min |
 | 05-polish-pdf-export | 2/2 | 11 min | 5.5 min |
 | 06-pause-resume-fix-crash-recovery | 2/2 | 10 min | 5.0 min |
+| 07-ui-cleanup-dead-code | 1/2 | 4 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (10 min), 05-02 (4 min), 05-01 (7 min), 06-01 (3 min), 06-02 (7 min)
+- Last 5 plans: 05-02 (4 min), 05-01 (7 min), 06-01 (3 min), 06-02 (7 min), 07-01 (4 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -128,6 +129,9 @@ Recent decisions affecting current work:
 - [06-02]: reactivateSteps routes actions through event queue (reactivate) or direct helpers (re-execute, re-complete)
 - [06-02]: activateStep handles both IDLE and WAITING entry states for recovery reactivation
 - [06-02]: Fire-and-forget reactivation pattern avoids blocking UI readiness on automated step resumption
+- [07-01]: Execute tab sort by lastActivityAt descending for single-workflow redirect (locked decision)
+- [07-01]: useFocusEffect for redirect instead of useEffect to trigger on every tab focus
+- [07-01]: router.replace for single-workflow redirect so back goes to previous tab
 
 ### Pending Todos
 
@@ -148,5 +152,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-01
-Stopped at: Completed 06-02-PLAN.md (Crash Recovery for Automated Steps) -- Phase 6 complete
+Stopped at: Completed 07-01-PLAN.md (Execute Tab + Dead Code Cleanup)
 Resume file: None
