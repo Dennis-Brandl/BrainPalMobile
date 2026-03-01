@@ -60,6 +60,24 @@ export interface WorkflowRunnerState {
 }
 
 // ---------------------------------------------------------------------------
+// RecoveredWorkflowData
+// ---------------------------------------------------------------------------
+
+/**
+ * Per-workflow recovery data returned from crash recovery.
+ * Contains the rebuilt runner state and list of steps needing reactivation.
+ */
+export interface RecoveredWorkflowData {
+  workflowInstanceId: string;
+  runnerState: WorkflowRunnerState;
+  stepsToReactivate: Array<{
+    stepOid: string;
+    stepInstanceId: string;
+    action: 'reactivate' | 're-execute' | 're-complete';
+  }>;
+}
+
+// ---------------------------------------------------------------------------
 // RecoveryResult
 // ---------------------------------------------------------------------------
 
@@ -67,8 +85,8 @@ export interface WorkflowRunnerState {
  * Result of crash recovery.
  */
 export interface RecoveryResult {
-  /** Workflow instance IDs that were successfully recovered and resumed */
-  recovered: string[];
+  /** Per-workflow recovery data with runner state and reactivation info */
+  recovered: RecoveredWorkflowData[];
   /** Workflow instance IDs flagged as stale (inactive > 24 hours) */
   stale: string[];
   /** Workflow instance IDs that encountered errors during recovery */

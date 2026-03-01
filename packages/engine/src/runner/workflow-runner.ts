@@ -6,7 +6,7 @@ import type { MasterWorkflowSpecification, MasterWorkflowStep } from '../types/m
 import type { RuntimeWorkflowStep, WorkflowConnection } from '../types/runtime';
 import type { StepState, StateEvent } from '../types/common';
 import type { EngineEvent } from '../types/events';
-import type { RunnerConfig, WorkflowRunnerState, IWorkflowRunnerForProxy } from './types';
+import type { RunnerConfig, WorkflowRunnerState, RecoveredWorkflowData, IWorkflowRunnerForProxy } from './types';
 import type { StepExecutionContext } from './step-executor';
 
 import { StateMachine } from '../state-machine/state-machine';
@@ -459,6 +459,37 @@ export class WorkflowRunner implements IWorkflowRunnerForProxy {
   }
 
   /**
+   * Reactivate steps recovered from a crash.
+   * Routes each step to the correct execution phase based on the recovery action.
+   * Steps are processed through the event queue in priority order.
+   */
+  async reactivateSteps(data: RecoveredWorkflowData): Promise<void> {
+    for (const entry of data.stepsToReactivate) {
+      switch (entry.action) {
+        case 'reactivate':
+          // Step was in WAITING -- re-activate through event queue
+          await this.eventQueue.enqueue({
+            type: 'STEP_ACTIVATED',
+            stepInstanceId: entry.stepInstanceId,
+            workflowInstanceId: data.workflowInstanceId,
+            stepOid: entry.stepOid,
+          });
+          break;
+
+        case 're-execute':
+          // Step was in EXECUTING (automated) -- re-execute via helper
+          await this.reactivateExecutingStep(data.workflowInstanceId, entry.stepOid, entry.stepInstanceId);
+          break;
+
+        case 're-complete':
+          // Step was in COMPLETING -- re-complete via helper
+          await this.reactivateCompletingStep(data.workflowInstanceId, entry.stepOid, entry.stepInstanceId);
+          break;
+      }
+    }
+  }
+
+  /**
    * Start a child workflow using direct step activation.
    * This bypasses the event queue to avoid deadlock when called from within
    * the event queue handler (e.g., during WORKFLOW_PROXY step execution).
@@ -667,29 +698,33 @@ export class WorkflowRunner implements IWorkflowRunnerForProxy {
     );
 
     // Transition: IDLE -> WAITING (START event)
-    const fromIdle = sm.getState();
-    sm.send('START');
-    step.step_state = 'WAITING';
-    step.activated_at = new Date().toISOString();
-    await this.config.stepRepo.save(step);
+    // For recovery reactivation, step may already be in WAITING state
+    const currentState = sm.getState();
+    if (currentState === 'IDLE') {
+      sm.send('START');
+      step.step_state = 'WAITING';
+      step.activated_at = new Date().toISOString();
+      await this.config.stepRepo.save(step);
 
-    await this.config.executionLogger.log({
-      workflow_instance_id: workflowInstanceId,
-      step_oid: stepOid,
-      step_instance_id: stepInstanceId,
-      event_type: 'STEP_STATE_CHANGED',
-      event_data_json: JSON.stringify({ fromState: fromIdle, toState: 'WAITING', event: 'START' }),
-      timestamp: new Date().toISOString(),
-    });
+      await this.config.executionLogger.log({
+        workflow_instance_id: workflowInstanceId,
+        step_oid: stepOid,
+        step_instance_id: stepInstanceId,
+        event_type: 'STEP_STATE_CHANGED',
+        event_data_json: JSON.stringify({ fromState: 'IDLE', toState: 'WAITING', event: 'START' }),
+        timestamp: new Date().toISOString(),
+      });
 
-    this.config.eventBus.emit('STEP_STATE_CHANGED', {
-      stepInstanceId,
-      workflowInstanceId,
-      stepOid,
-      fromState: fromIdle,
-      toState: 'WAITING',
-      event: 'START',
-    });
+      this.config.eventBus.emit('STEP_STATE_CHANGED', {
+        stepInstanceId,
+        workflowInstanceId,
+        stepOid,
+        fromState: 'IDLE',
+        toState: 'WAITING',
+        event: 'START',
+      });
+    }
+    // If already WAITING (recovery), skip the transition and proceed directly
 
     // Check resource commands (simplified: skip if none)
     const masterStep = this.getMasterStep(step);
@@ -994,6 +1029,66 @@ export class WorkflowRunner implements IWorkflowRunnerForProxy {
   // -------------------------------------------------------------------------
   // Internal Helpers
   // -------------------------------------------------------------------------
+
+  /**
+   * Re-execute an automated step that was in EXECUTING state at crash time.
+   * Rebuilds the step context and runs executeExecutingPhase, then continues
+   * to completing if auto-completed.
+   */
+  private async reactivateExecutingStep(
+    workflowInstanceId: string,
+    stepOid: string,
+    stepInstanceId: string,
+  ): Promise<void> {
+    const runnerState = this.activeWorkflows.get(workflowInstanceId);
+    if (!runnerState) return;
+
+    const step = await this.config.stepRepo.getById(stepInstanceId);
+    if (!step) return;
+
+    const sm = runnerState.stateMachines.get(stepOid);
+    if (!sm) return;
+
+    const masterStep = this.getMasterStep(step);
+    const ctx = this.buildStepContext(workflowInstanceId, step, masterStep, sm);
+    const autoCompleted = await executeExecutingPhase(ctx);
+
+    if (autoCompleted) {
+      const completingStep = await this.config.stepRepo.getById(stepInstanceId);
+      if (!completingStep) return;
+
+      const compCtx = this.buildStepContext(workflowInstanceId, completingStep, masterStep, sm);
+      await executeCompletingPhase(compCtx);
+
+      await this.onStepCompleted(workflowInstanceId, stepOid, stepInstanceId);
+    }
+  }
+
+  /**
+   * Re-complete a step that was in COMPLETING state at crash time.
+   * Rebuilds the step context and runs executeCompletingPhase, then handles
+   * step completion.
+   */
+  private async reactivateCompletingStep(
+    workflowInstanceId: string,
+    stepOid: string,
+    stepInstanceId: string,
+  ): Promise<void> {
+    const runnerState = this.activeWorkflows.get(workflowInstanceId);
+    if (!runnerState) return;
+
+    const step = await this.config.stepRepo.getById(stepInstanceId);
+    if (!step) return;
+
+    const sm = runnerState.stateMachines.get(stepOid);
+    if (!sm) return;
+
+    const masterStep = this.getMasterStep(step);
+    const ctx = this.buildStepContext(workflowInstanceId, step, masterStep, sm);
+    await executeCompletingPhase(ctx);
+
+    await this.onStepCompleted(workflowInstanceId, stepOid, stepInstanceId);
+  }
 
   private findStartStepOid(runnerState: WorkflowRunnerState): string | undefined {
     for (const [stepOid, step] of runnerState.schedulerContext.steps) {
