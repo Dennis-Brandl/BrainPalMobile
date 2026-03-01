@@ -16,6 +16,7 @@ export type LogEventType =
   | 'WORKFLOW_COMPLETED'
   | 'WORKFLOW_ABORTED'
   | 'WORKFLOW_STOPPED'
+  | 'WORKFLOW_PAUSED'
   | 'WORKFLOW_RESUMED'
   | 'STEP_STATE_CHANGED'
   | 'SCHEDULER_ACTIVATED_STEPS'
@@ -56,6 +57,8 @@ export type EngineEventMap = {
   WORKFLOW_COMPLETED: { workflowInstanceId: string };
   WORKFLOW_ABORTED: { workflowInstanceId: string };
   WORKFLOW_STOPPED: { workflowInstanceId: string };
+  WORKFLOW_PAUSED: { workflowInstanceId: string };
+  WORKFLOW_RESUMED: { workflowInstanceId: string };
   STEP_STATE_CHANGED: {
     stepInstanceId: string;
     workflowInstanceId: string;
@@ -122,6 +125,8 @@ export type EngineEvent =
   | { type: 'WORKFLOW_COMPLETED'; workflowInstanceId: string }
   | { type: 'WORKFLOW_ABORTED'; workflowInstanceId: string }
   | { type: 'WORKFLOW_STOPPED'; workflowInstanceId: string }
+  | { type: 'WORKFLOW_PAUSED'; workflowInstanceId: string }
+  | { type: 'WORKFLOW_RESUMED'; workflowInstanceId: string }
   | {
       type: 'STEP_STATE_CHANGED';
       stepInstanceId: string;

@@ -276,6 +276,17 @@ export class WorkflowRunner implements IWorkflowRunnerForProxy {
     }
 
     await this.config.workflowRepo.updateState(workflowInstanceId, 'PAUSED');
+
+    // Log event
+    await this.config.executionLogger.log({
+      workflow_instance_id: workflowInstanceId,
+      event_type: 'WORKFLOW_PAUSED',
+      event_data_json: JSON.stringify({ paused_at: new Date().toISOString() }),
+      timestamp: new Date().toISOString(),
+    });
+
+    // Emit EventBus event
+    this.config.eventBus.emit('WORKFLOW_PAUSED', { workflowInstanceId });
   }
 
   /**
@@ -314,6 +325,17 @@ export class WorkflowRunner implements IWorkflowRunnerForProxy {
     }
 
     await this.config.workflowRepo.updateState(workflowInstanceId, 'RUNNING');
+
+    // Log event
+    await this.config.executionLogger.log({
+      workflow_instance_id: workflowInstanceId,
+      event_type: 'WORKFLOW_RESUMED',
+      event_data_json: JSON.stringify({ resumed_at: new Date().toISOString() }),
+      timestamp: new Date().toISOString(),
+    });
+
+    // Emit EventBus event
+    this.config.eventBus.emit('WORKFLOW_RESUMED', { workflowInstanceId });
   }
 
   /**
