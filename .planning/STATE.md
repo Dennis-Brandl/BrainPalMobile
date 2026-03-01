@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Users can import a workflow package and execute it step-by-step on any platform -- the execution engine must faithfully walk the workflow graph, render forms correctly, handle branching/resources/nesting, and persist state across crashes.
-**Current focus:** Phase 7: UX Refresh / Settings / About (gap closure)
+**Current focus:** Phase 7: UI Cleanup + Dead Code Removal (gap closure)
 
 ## Current Position
 
-Phase: 6 of 7 (Pause/Resume Fix + Crash Recovery)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-03-01 -- Completed 06-02-PLAN.md (Crash Recovery for Automated Steps)
+Phase: 7 of 7 (UI Cleanup + Dead Code Removal)
+Plan: 0 of ? in current phase (needs planning)
+Status: GAP CLOSURE -- Phase 6 complete, Phase 7 pending
+Last activity: 2026-03-01 -- Completed Phase 6 (Pause/Resume Fix + Crash Recovery)
 
 Progress: [####################################] 19/19 Plans (6/7 Phases complete)
 

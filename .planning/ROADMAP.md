@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Execution UI** - WYSIWYG form renderer, step carousel, execution screen, home screen, state controls, navigation
 - [x] **Phase 4: Workflow Proxy + Ancillary Features** - Nested workflow execution, history display, notifications, settings
 - [x] **Phase 5: Polish + PDF Export** - Execution report export, performance tuning, production hardening
-- [ ] **Phase 6: Pause/Resume Fix + Crash Recovery** - Fix WORKFLOW_PAUSED event gap, complete crash recovery for automated steps
+- [x] **Phase 6: Pause/Resume Fix + Crash Recovery** - Fix WORKFLOW_PAUSED event gap, complete crash recovery for automated steps
 - [ ] **Phase 7: UI Cleanup + Dead Code Removal** - Replace placeholder tabs, remove unused exports, add missing verification
 
 ## Phase Details
@@ -120,8 +120,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Pause/resume lifecycle event emission and EngineProvider subscriptions
-- [ ] 06-02-PLAN.md — Crash recovery step reactivation, extended RecoveryResult, WORKFLOW_PROXY fix
+- [x] 06-01: Pause/resume lifecycle event emission and EngineProvider subscriptions
+- [x] 06-02: Crash recovery step reactivation, extended RecoveryResult, WORKFLOW_PROXY fix
 
 ### Phase 7: UI Cleanup + Dead Code Removal
 **Goal**: Clean up placeholder UI stubs and dead code identified in the v1.0 milestone audit
@@ -150,9 +150,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Execution UI | 4/4 | ✓ Complete | 2026-02-25 |
 | 4. Workflow Proxy + Ancillary | 3/3 | ✓ Complete | 2026-02-26 |
 | 5. Polish + PDF Export | 2/2 | ✓ Complete | 2026-03-01 |
-| 6. Pause/Resume Fix + Crash Recovery | 0/2 | Pending | — |
+| 6. Pause/Resume Fix + Crash Recovery | 2/2 | ✓ Complete | 2026-03-01 |
 | 7. UI Cleanup + Dead Code Removal | 0/? | Pending | — |
 
 ---
 *Roadmap created: 2026-02-24*
-*Last updated: 2026-03-01*
+*Last updated: 2026-03-02*
