@@ -1,8 +1,13 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
 import { colors } from '@brainpal/ui';
+import { useExecutionStore } from '../../src/stores/execution-store';
 
 export default function TabLayout() {
+  const activeCount = Object.keys(
+    useExecutionStore((s) => s.activeWorkflows),
+  ).length;
+
   return (
     <Tabs
       screenOptions={{
@@ -32,18 +37,12 @@ export default function TabLayout() {
         name="execute"
         options={{
           title: 'Execute',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <FontAwesome name="play-circle" size={size} color={color} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="overview"
-        options={{
-          title: 'Overview',
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="sitemap" size={size} color={color} />
-          ),
+          tabBarBadge: activeCount > 0 ? activeCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: colors.primary },
         }}
       />
       <Tabs.Screen
