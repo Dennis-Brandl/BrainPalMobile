@@ -117,10 +117,11 @@ Plans:
   2. Crash recovery returns stepsToReactivate in RecoveryResult and re-processes them; automated steps (START, PARALLEL, WAIT_ALL, SELECT_1) that were mid-flight during crash resume correctly after restart
   3. Flow 4 (Start → Pause → Resume → Complete) passes end-to-end
   4. Flow 5 (App crash → Restart → Resume) passes end-to-end for both user interaction and automated steps
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: TBD
+- [ ] 06-01-PLAN.md — Pause/resume lifecycle event emission and EngineProvider subscriptions
+- [ ] 06-02-PLAN.md — Crash recovery step reactivation, extended RecoveryResult, WORKFLOW_PROXY fix
 
 ### Phase 7: UI Cleanup + Dead Code Removal
 **Goal**: Clean up placeholder UI stubs and dead code identified in the v1.0 milestone audit
@@ -149,7 +150,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Execution UI | 4/4 | ✓ Complete | 2026-02-25 |
 | 4. Workflow Proxy + Ancillary | 3/3 | ✓ Complete | 2026-02-26 |
 | 5. Polish + PDF Export | 2/2 | ✓ Complete | 2026-03-01 |
-| 6. Pause/Resume Fix + Crash Recovery | 0/? | Pending | — |
+| 6. Pause/Resume Fix + Crash Recovery | 0/2 | Pending | — |
 | 7. UI Cleanup + Dead Code Removal | 0/? | Pending | — |
 
 ---
