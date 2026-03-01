@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Users can import a workflow package and execute it step-by-step on any platform -- the execution engine must faithfully walk the workflow graph, render forms correctly, handle branching/resources/nesting, and persist state across crashes.
-**Current focus:** Phase 6: Pause/Resume Fix + Crash Recovery (gap closure)
+**Current focus:** Phase 7: UX Refresh / Settings / About (gap closure)
 
 ## Current Position
 
 Phase: 6 of 7 (Pause/Resume Fix + Crash Recovery)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-03-01 -- Completed 06-01-PLAN.md (Pause/Resume Event Gap Fix)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-03-01 -- Completed 06-02-PLAN.md (Crash Recovery for Automated Steps)
 
-Progress: [###################################-] 18/19 Plans (5/7 Phases complete)
+Progress: [####################################] 19/19 Plans (6/7 Phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
-- Average duration: 5.4 min
-- Total execution time: 1.63 hours
+- Total plans completed: 19
+- Average duration: 5.5 min
+- Total execution time: 1.75 hours
 
 **By Phase:**
 
@@ -32,10 +32,10 @@ Progress: [###################################-] 18/19 Plans (5/7 Phases complet
 | 03-execution-ui | 4/4 | 22 min | 5.5 min |
 | 04-workflow-proxy-ancillary | 3/3 | 20 min | 6.7 min |
 | 05-polish-pdf-export | 2/2 | 11 min | 5.5 min |
-| 06-pause-resume-fix-crash-recovery | 1/2 | 3 min | 3.0 min |
+| 06-pause-resume-fix-crash-recovery | 2/2 | 10 min | 5.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-02 (4 min), 04-01 (10 min), 05-02 (4 min), 05-01 (7 min), 06-01 (3 min)
+- Last 5 plans: 04-01 (10 min), 05-02 (4 min), 05-01 (7 min), 06-01 (3 min), 06-02 (7 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -123,6 +123,11 @@ Recent decisions affecting current work:
 - [06-01]: WORKFLOW_PAUSED added to LogEventType; WORKFLOW_RESUMED already existed (used by crash recovery logging)
 - [06-01]: Both pause and resume emit for ALL workflows (parent and child) matching existing start/stop/abort pattern
 - [06-01]: No removeActiveWorkflow/setTimeout for pause/resume (workflow stays active, unlike stop/abort)
+- [06-02]: RecoveredWorkflowData returned from crash-recovery.ts eliminates duplicated state reconstruction in EngineProvider
+- [06-02]: WORKFLOW_PROXY in EXECUTING classified as stay-executing (waits for child) not re-execute
+- [06-02]: reactivateSteps routes actions through event queue (reactivate) or direct helpers (re-execute, re-complete)
+- [06-02]: activateStep handles both IDLE and WAITING entry states for recovery reactivation
+- [06-02]: Fire-and-forget reactivation pattern avoids blocking UI readiness on automated step resumption
 
 ### Pending Todos
 
@@ -143,5 +148,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-01
-Stopped at: Completed 06-01-PLAN.md (Pause/Resume Event Gap Fix)
-Resume file: .planning/phases/06-pause-resume-fix-crash-recovery/06-02-PLAN.md
+Stopped at: Completed 06-02-PLAN.md (Crash Recovery for Automated Steps) -- Phase 6 complete
+Resume file: None
