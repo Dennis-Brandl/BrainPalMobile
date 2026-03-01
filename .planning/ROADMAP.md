@@ -133,10 +133,11 @@ Plans:
   2. Overview tab either shows useful workflow overview content or is removed from navigation
   3. FormActionButtons component is removed if unused, or wired up if needed
   4. Phase 3 VERIFICATION.md exists documenting the execution UI verification status
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 07-01: TBD
+- [ ] 07-01-PLAN.md — Smart Execute tab, Overview tab removal, FormActionButtons cleanup
+- [ ] 07-02-PLAN.md — Phase 3 VERIFICATION.md creation (retroactive verification)
 
 ## Progress
 
@@ -151,7 +152,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Workflow Proxy + Ancillary | 3/3 | ✓ Complete | 2026-02-26 |
 | 5. Polish + PDF Export | 2/2 | ✓ Complete | 2026-03-01 |
 | 6. Pause/Resume Fix + Crash Recovery | 2/2 | ✓ Complete | 2026-03-01 |
-| 7. UI Cleanup + Dead Code Removal | 0/? | Pending | — |
+| 7. UI Cleanup + Dead Code Removal | 0/2 | Pending | — |
 
 ---
 *Roadmap created: 2026-02-24*
