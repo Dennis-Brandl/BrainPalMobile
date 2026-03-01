@@ -2,7 +2,7 @@
 
 ## Overview
 
-BrainPal Mobile is built in five phases that follow the dependency chain: foundation infrastructure must be correct before the engine can write state, the engine must be proven before the UI can render against it, and the core execution path must work before ancillary features (history, notifications, workflow proxy) layer on top. The final phase addresses PDF export and production polish. Each phase delivers a coherent, independently verifiable capability -- nothing is "done" until it works on Android, iOS, and web.
+BrainPal Mobile is built in seven phases. Phases 1-5 deliver the core v1 milestone. Phases 6-7 close gaps identified by the v1.0 milestone audit — fixing broken E2E flows and cleaning up tech debt before milestone archival.
 
 ## Phases
 
@@ -17,6 +17,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Execution UI** - WYSIWYG form renderer, step carousel, execution screen, home screen, state controls, navigation
 - [x] **Phase 4: Workflow Proxy + Ancillary Features** - Nested workflow execution, history display, notifications, settings
 - [x] **Phase 5: Polish + PDF Export** - Execution report export, performance tuning, production hardening
+- [ ] **Phase 6: Pause/Resume Fix + Crash Recovery** - Fix WORKFLOW_PAUSED event gap, complete crash recovery for automated steps
+- [ ] **Phase 7: UI Cleanup + Dead Code Removal** - Replace placeholder tabs, remove unused exports, add missing verification
 
 ## Phase Details
 
@@ -105,10 +107,40 @@ Plans:
 - [x] 05-01: PDF export service (mobile + web), HTML report template, Export button on history detail
 - [x] 05-02: Alert.alert confirmation migration, import progress indicator, history pagination, Zustand selector optimization
 
+### Phase 6: Pause/Resume Fix + Crash Recovery
+**Goal**: Fix two broken E2E flows: (1) Pause/Resume shows wrong UI buttons because WORKFLOW_PAUSED event is never emitted, and (2) crash recovery leaves automated steps frozen because stepsToReactivate is built but discarded
+**Depends on**: Phase 5
+**Requirements**: None (no new requirements — fixes audit gaps in existing requirements)
+**Gap Closure**: Closes integration gaps and broken flows from v1.0-MILESTONE-AUDIT.md
+**Success Criteria** (what must be TRUE):
+  1. Pausing a workflow emits a WORKFLOW_PAUSED event that updates Zustand store; StateControls immediately shows Resume button (not Pause) after pause
+  2. Crash recovery returns stepsToReactivate in RecoveryResult and re-processes them; automated steps (START, PARALLEL, WAIT_ALL, SELECT_1) that were mid-flight during crash resume correctly after restart
+  3. Flow 4 (Start → Pause → Resume → Complete) passes end-to-end
+  4. Flow 5 (App crash → Restart → Resume) passes end-to-end for both user interaction and automated steps
+**Plans**: TBD
+
+Plans:
+- [ ] 06-01: TBD
+
+### Phase 7: UI Cleanup + Dead Code Removal
+**Goal**: Clean up placeholder UI stubs and dead code identified in the v1.0 milestone audit
+**Depends on**: Phase 6
+**Requirements**: None (tech debt cleanup)
+**Gap Closure**: Closes tech debt from v1.0-MILESTONE-AUDIT.md
+**Success Criteria** (what must be TRUE):
+  1. Execute tab either redirects to active workflow execution or shows a meaningful "no active workflow" state (not a placeholder stub)
+  2. Overview tab either shows useful workflow overview content or is removed from navigation
+  3. FormActionButtons component is removed if unused, or wired up if needed
+  4. Phase 3 VERIFICATION.md exists documenting the execution UI verification status
+**Plans**: TBD
+
+Plans:
+- [ ] 07-01: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
@@ -117,6 +149,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 3. Execution UI | 4/4 | ✓ Complete | 2026-02-25 |
 | 4. Workflow Proxy + Ancillary | 3/3 | ✓ Complete | 2026-02-26 |
 | 5. Polish + PDF Export | 2/2 | ✓ Complete | 2026-03-01 |
+| 6. Pause/Resume Fix + Crash Recovery | 0/? | Pending | — |
+| 7. UI Cleanup + Dead Code Removal | 0/? | Pending | — |
 
 ---
 *Roadmap created: 2026-02-24*

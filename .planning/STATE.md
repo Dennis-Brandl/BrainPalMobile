@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Users can import a workflow package and execute it step-by-step on any platform -- the execution engine must faithfully walk the workflow graph, render forms correctly, handle branching/resources/nesting, and persist state across crashes.
-**Current focus:** Phase 5: Polish & PDF Export
+**Current focus:** Phase 6: Pause/Resume Fix + Crash Recovery (gap closure)
 
 ## Current Position
 
-Phase: 5 of 5 (Polish & PDF Export)
-Plan: 2 of 2 in current phase
-Status: MILESTONE COMPLETE -- All 5 phases finalized
-Last activity: 2026-03-01 -- Phase 5 finalized, milestone complete
+Phase: 6 of 7 (Pause/Resume Fix + Crash Recovery)
+Plan: 0 of ? in current phase (needs planning)
+Status: GAP CLOSURE -- Phases 6-7 added from v1.0 milestone audit
+Last activity: 2026-03-01 -- Gap closure phases created from audit
 
-Progress: [##################################] 17/17 Plans (5/5 Phases complete)
+Progress: [##################################--] 17/? Plans (5/7 Phases complete)
 
 ## Performance Metrics
 
