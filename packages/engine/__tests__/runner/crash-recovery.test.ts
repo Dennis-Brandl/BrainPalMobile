@@ -2,7 +2,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { recoverWorkflows } from '../../src/runner/crash-recovery';
-import type { RunnerConfig } from '../../src/runner/types';
+import type { RunnerConfig, RecoveredWorkflowData } from '../../src/runner/types';
 import type { RuntimeWorkflow, RuntimeWorkflowStep, WorkflowConnection } from '../../src/types/runtime';
 import { createTestContext } from '../helpers/test-utils';
 
@@ -80,6 +80,11 @@ function makeConnection(
   };
 }
 
+/** Helper: find RecoveredWorkflowData by workflow instance ID */
+function findRecovered(result: { recovered: RecoveredWorkflowData[] }, workflowId: string): RecoveredWorkflowData | undefined {
+  return result.recovered.find((r) => r.workflowInstanceId === workflowId);
+}
+
 describe('crash recovery', () => {
   let ctx: ReturnType<typeof createTestContext>;
 
@@ -103,7 +108,7 @@ describe('crash recovery', () => {
 
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
 
-    expect(result.recovered).toContain('wf-1');
+    expect(findRecovered(result, 'wf-1')).toBeDefined();
     expect(result.stale).not.toContain('wf-1');
 
     // Step should stay in EXECUTING (form re-displayed)
@@ -127,7 +132,7 @@ describe('crash recovery', () => {
 
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
 
-    expect(result.recovered).toContain('wf-2');
+    expect(findRecovered(result, 'wf-2')).toBeDefined();
 
     // Step should be rolled back to WAITING and resolved inputs cleared
     const recoveredStep = await ctx.stepRepo.getById('step-2');
@@ -150,9 +155,13 @@ describe('crash recovery', () => {
 
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
 
-    expect(result.recovered).toContain('wf-3');
+    const recovered = findRecovered(result, 'wf-3');
+    expect(recovered).toBeDefined();
     // Step stays in COMPLETING state (runner will re-execute completing phase)
     // The recovery adds this to stepsToReactivate for the runner to handle
+    expect(recovered!.stepsToReactivate).toContainEqual(
+      expect.objectContaining({ stepOid: 'step-oid-3', action: 're-complete' }),
+    );
   });
 
   // -----------------------------------------------------------------------
@@ -172,7 +181,7 @@ describe('crash recovery', () => {
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
 
     expect(result.stale).toContain('wf-stale');
-    expect(result.recovered).not.toContain('wf-stale');
+    expect(findRecovered(result, 'wf-stale')).toBeUndefined();
   });
 
   // -----------------------------------------------------------------------
@@ -191,7 +200,7 @@ describe('crash recovery', () => {
 
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
 
-    expect(result.recovered).toContain('wf-recent');
+    expect(findRecovered(result, 'wf-recent')).toBeDefined();
     expect(result.stale).not.toContain('wf-recent');
   });
 
@@ -208,7 +217,7 @@ describe('crash recovery', () => {
     await ctx.connectionRepo.saveMany('wf-abort', []);
 
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
-    expect(result.recovered).toContain('wf-abort');
+    expect(findRecovered(result, 'wf-abort')).toBeDefined();
 
     const recoveredStep = await ctx.stepRepo.getById('step-a');
     expect(recoveredStep?.step_state).toBe('ABORTED');
@@ -224,7 +233,7 @@ describe('crash recovery', () => {
     await ctx.connectionRepo.saveMany('wf-stop', []);
 
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
-    expect(result.recovered).toContain('wf-stop');
+    expect(findRecovered(result, 'wf-stop')).toBeDefined();
 
     const recoveredStep = await ctx.stepRepo.getById('step-st');
     expect(recoveredStep?.step_state).toBe('COMPLETED');
@@ -240,7 +249,7 @@ describe('crash recovery', () => {
     await ctx.connectionRepo.saveMany('wf-pause', []);
 
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
-    expect(result.recovered).toContain('wf-pause');
+    expect(findRecovered(result, 'wf-pause')).toBeDefined();
 
     const recoveredStep = await ctx.stepRepo.getById('step-p');
     expect(recoveredStep?.step_state).toBe('PAUSED');
@@ -256,7 +265,7 @@ describe('crash recovery', () => {
     await ctx.connectionRepo.saveMany('wf-unpause', []);
 
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
-    expect(result.recovered).toContain('wf-unpause');
+    expect(findRecovered(result, 'wf-unpause')).toBeDefined();
 
     const recoveredStep = await ctx.stepRepo.getById('step-up');
     expect(recoveredStep?.step_state).toBe('EXECUTING');
@@ -272,7 +281,7 @@ describe('crash recovery', () => {
     await ctx.connectionRepo.saveMany('wf-idle', []);
 
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
-    expect(result.recovered).toContain('wf-idle');
+    expect(findRecovered(result, 'wf-idle')).toBeDefined();
 
     const recoveredStep = await ctx.stepRepo.getById('step-i');
     expect(recoveredStep?.step_state).toBe('IDLE');
@@ -288,7 +297,7 @@ describe('crash recovery', () => {
     await ctx.connectionRepo.saveMany('wf-done', []);
 
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
-    expect(result.recovered).toContain('wf-done');
+    expect(findRecovered(result, 'wf-done')).toBeDefined();
 
     const recoveredStep = await ctx.stepRepo.getById('step-d');
     expect(recoveredStep?.step_state).toBe('COMPLETED');
@@ -320,7 +329,7 @@ describe('crash recovery', () => {
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
 
     // Should recover fine (empty workflow)
-    expect(result.recovered).toContain('wf-err');
+    expect(findRecovered(result, 'wf-err')).toBeDefined();
   });
 
   it('handles multiple active workflows', async () => {
@@ -339,8 +348,99 @@ describe('crash recovery', () => {
 
     const result = await recoverWorkflows(buildRunnerConfig(ctx));
 
-    expect(result.recovered).toContain('wf-m1');
-    expect(result.recovered).toContain('wf-m2');
+    expect(findRecovered(result, 'wf-m1')).toBeDefined();
+    expect(findRecovered(result, 'wf-m2')).toBeDefined();
     expect(result.recovered).toHaveLength(2);
+  });
+
+  // -----------------------------------------------------------------------
+  // New tests: RecoveredWorkflowData structure and WORKFLOW_PROXY
+  // -----------------------------------------------------------------------
+
+  it('RecoveryResult includes runnerState per workflow', async () => {
+    const wf = makeWorkflow('wf-rs');
+    await ctx.workflowRepo.save(wf);
+
+    const step = makeStep('step-rs', 'wf-rs', 'step-oid-rs', 'USER_INTERACTION', 'EXECUTING');
+    await ctx.stepRepo.save(step);
+    await ctx.connectionRepo.saveMany('wf-rs', []);
+
+    const result = await recoverWorkflows(buildRunnerConfig(ctx));
+
+    const recovered = findRecovered(result, 'wf-rs');
+    expect(recovered).toBeDefined();
+    expect(recovered!.runnerState).toBeDefined();
+    expect(recovered!.runnerState.workflowInstanceId).toBe('wf-rs');
+    expect(recovered!.runnerState.masterWorkflowOid).toBe('master-oid');
+    expect(recovered!.runnerState.stateMachines.size).toBe(1);
+    expect(recovered!.runnerState.stepOidToInstanceId.get('step-oid-rs')).toBe('step-rs');
+  });
+
+  it('WORKFLOW_PROXY in EXECUTING stays executing (not in stepsToReactivate)', async () => {
+    const wf = makeWorkflow('wf-proxy');
+    await ctx.workflowRepo.save(wf);
+
+    const step = makeStep('step-proxy', 'wf-proxy', 'step-oid-proxy', 'WORKFLOW_PROXY', 'EXECUTING');
+    await ctx.stepRepo.save(step);
+    await ctx.connectionRepo.saveMany('wf-proxy', []);
+
+    const result = await recoverWorkflows(buildRunnerConfig(ctx));
+
+    const recovered = findRecovered(result, 'wf-proxy');
+    expect(recovered).toBeDefined();
+
+    // WORKFLOW_PROXY should NOT be in stepsToReactivate (it stays executing, waiting for child)
+    expect(recovered!.stepsToReactivate).toHaveLength(0);
+
+    // Step should remain in EXECUTING
+    const recoveredStep = await ctx.stepRepo.getById('step-proxy');
+    expect(recoveredStep?.step_state).toBe('EXECUTING');
+  });
+
+  it('automated step (START) in EXECUTING is marked for re-execution', async () => {
+    const wf = makeWorkflow('wf-auto');
+    await ctx.workflowRepo.save(wf);
+
+    const step = makeStep('step-auto', 'wf-auto', 'step-oid-auto', 'START', 'EXECUTING');
+    await ctx.stepRepo.save(step);
+    await ctx.connectionRepo.saveMany('wf-auto', []);
+
+    const result = await recoverWorkflows(buildRunnerConfig(ctx));
+
+    const recovered = findRecovered(result, 'wf-auto');
+    expect(recovered).toBeDefined();
+
+    // START in EXECUTING should be marked for re-execution
+    expect(recovered!.stepsToReactivate).toHaveLength(1);
+    expect(recovered!.stepsToReactivate[0]).toEqual({
+      stepOid: 'step-oid-auto',
+      stepInstanceId: 'step-auto',
+      action: 're-execute',
+    });
+  });
+
+  it('stepsToReactivate sorted by priority (reactivate before re-execute before re-complete)', async () => {
+    const wf = makeWorkflow('wf-sort');
+    await ctx.workflowRepo.save(wf);
+
+    // Create steps in reverse priority order
+    const stepComplete = makeStep('step-c', 'wf-sort', 'oid-c', 'USER_INTERACTION', 'COMPLETING');
+    const stepExec = makeStep('step-e', 'wf-sort', 'oid-e', 'START', 'EXECUTING');
+    const stepWait = makeStep('step-w', 'wf-sort', 'oid-w', 'USER_INTERACTION', 'WAITING');
+    await ctx.stepRepo.save(stepComplete);
+    await ctx.stepRepo.save(stepExec);
+    await ctx.stepRepo.save(stepWait);
+    await ctx.connectionRepo.saveMany('wf-sort', []);
+
+    const result = await recoverWorkflows(buildRunnerConfig(ctx));
+
+    const recovered = findRecovered(result, 'wf-sort');
+    expect(recovered).toBeDefined();
+    expect(recovered!.stepsToReactivate).toHaveLength(3);
+
+    // Verify ordering: reactivate first, then re-execute, then re-complete
+    expect(recovered!.stepsToReactivate[0].action).toBe('reactivate');
+    expect(recovered!.stepsToReactivate[1].action).toBe('re-execute');
+    expect(recovered!.stepsToReactivate[2].action).toBe('re-complete');
   });
 });

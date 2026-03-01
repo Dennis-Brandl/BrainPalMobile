@@ -15,14 +15,8 @@ import {
   WorkflowRunner,
   EngineEventBus,
   recoverWorkflows,
-  Scheduler,
-  StateMachine,
-  ISA88_OBSERVABLE_TRANSITIONS,
   type RunnerConfig,
   type StepState,
-  type StateEvent,
-  type WorkflowRunnerState,
-  type RuntimeWorkflowStep,
 } from '@brainpal/engine';
 import {
   SqliteWorkflowRepository,
@@ -296,55 +290,30 @@ export function EngineProvider({ children }: PropsWithChildren) {
       try {
         const result = await recoverWorkflows(config);
 
-        // For each recovered workflow, restore into runner's active map
-        for (const workflowId of result.recovered) {
-          const workflow = await config.workflowRepo.getById(workflowId);
-          if (!workflow) continue;
+        // For each recovered workflow, consume runnerState from RecoveryResult
+        for (const recoveredData of result.recovered) {
+          const { workflowInstanceId, runnerState, stepsToReactivate } = recoveredData;
 
-          const steps = await config.stepRepo.getByWorkflow(workflowId);
-          const connections = await config.connectionRepo.getByWorkflow(workflowId);
-
-          // Rebuild runner state and restore into runner's active workflows map
-          const scheduler = new Scheduler();
-          const { outgoing, incoming } = scheduler.buildAdjacencyLists(connections);
-
-          const stepsMap = new Map<string, RuntimeWorkflowStep>();
-          const stepOidToInstanceId = new Map<string, string>();
-          const stepInstanceIdToOid = new Map<string, string>();
-
-          for (const step of steps) {
-            stepsMap.set(step.step_oid, step);
-            stepOidToInstanceId.set(step.step_oid, step.instance_id);
-            stepInstanceIdToOid.set(step.instance_id, step.step_oid);
-          }
-
-          const stateMachines = new Map<string, StateMachine<StepState, StateEvent>>();
-          for (const step of steps) {
-            const sm = new StateMachine<StepState, StateEvent>({
-              initialState: step.step_state,
-              transitions: ISA88_OBSERVABLE_TRANSITIONS,
-            });
-            stateMachines.set(step.step_oid, sm);
-          }
-
-          const runnerState: WorkflowRunnerState = {
-            workflowInstanceId: workflowId,
-            masterWorkflowOid: workflow.master_workflow_oid,
-            stateMachines,
-            schedulerContext: { outgoing, incoming, steps: stepsMap, connections },
-            stepOidToInstanceId,
-            stepInstanceIdToOid,
-          };
+          // Restore runnerState directly (already built by crash-recovery.ts)
           runner.restoreWorkflowState(runnerState);
+
+          // Look up workflow for parent cache and UI registration
+          const workflow = await config.workflowRepo.getById(workflowInstanceId);
+          if (!workflow) continue;
 
           // Pre-populate parent cache for all recovered workflows
           if (workflow.parent_workflow_instance_id !== null) {
-            parentCache.set(workflowId, workflow.parent_workflow_instance_id);
-            // This is a child workflow -- restore into runner state but
-            // do NOT add to UI activeWorkflows (parent is the carousel entry)
+            parentCache.set(workflowInstanceId, workflow.parent_workflow_instance_id);
+            // Child workflow -- restore into runner state but do NOT add to UI
+            // Reactivate frozen automated steps (fire-and-forget)
+            if (stepsToReactivate.length > 0) {
+              runner.reactivateSteps(recoveredData).catch((err) => {
+                console.warn(`Reactivation failed for child ${workflowInstanceId}:`, err);
+              });
+            }
             continue;
           }
-          parentCache.set(workflowId, null);
+          parentCache.set(workflowInstanceId, null);
 
           // Parse spec for workflow name
           let name = 'Workflow';
@@ -355,7 +324,15 @@ export function EngineProvider({ children }: PropsWithChildren) {
             // Use default
           }
 
-          store.addActiveWorkflow(workflowId, workflow.master_workflow_oid, name, steps.length);
+          const stepCount = runnerState.schedulerContext.steps.size;
+          store.addActiveWorkflow(workflowInstanceId, workflow.master_workflow_oid, name, stepCount);
+
+          // Reactivate frozen automated steps (fire-and-forget, don't block UI)
+          if (stepsToReactivate.length > 0) {
+            runner.reactivateSteps(recoveredData).catch((err) => {
+              console.warn(`Reactivation failed for ${workflowInstanceId}:`, err);
+            });
+          }
         }
       } catch (err) {
         console.warn('Crash recovery failed:', err);
