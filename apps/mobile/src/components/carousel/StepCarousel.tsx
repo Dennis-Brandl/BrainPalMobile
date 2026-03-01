@@ -1,5 +1,5 @@
 // StepCarousel: FlatList-based horizontal carousel for navigating active
-// user interaction steps. Each page renders a FormCanvas + FormActionButtons.
+// user interaction steps. Each page renders a FormCanvas with embedded action buttons.
 // Supports wrap-around navigation via Previous/Next buttons.
 
 import React, { useCallback, useRef, useState } from 'react';
