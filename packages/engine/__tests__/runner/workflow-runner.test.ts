@@ -430,6 +430,47 @@ describe('WorkflowRunner', () => {
       const workflowResumed = await ctx.workflowRepo.getById(wfId);
       expect(workflowResumed?.workflow_state).toBe('RUNNING');
     });
+
+    it('emits WORKFLOW_PAUSED and WORKFLOW_RESUMED events', async () => {
+      const spec = makeLinearWorkflow(1);
+      const wfId = await runner.createWorkflow(spec);
+      await runner.startWorkflow(wfId);
+
+      // Spy on pause event
+      const pausedEvents: Array<EngineEventMap['WORKFLOW_PAUSED']> = [];
+      ctx.eventBus.on('WORKFLOW_PAUSED', (data) => pausedEvents.push(data));
+
+      // Spy on resume event
+      const resumedEvents: Array<EngineEventMap['WORKFLOW_RESUMED']> = [];
+      ctx.eventBus.on('WORKFLOW_RESUMED', (data) => resumedEvents.push(data));
+
+      // Pause workflow
+      await runner.pauseWorkflow(wfId);
+
+      expect(pausedEvents).toHaveLength(1);
+      expect(pausedEvents[0].workflowInstanceId).toBe(wfId);
+
+      // Resume workflow
+      await runner.resumeWorkflow(wfId);
+
+      expect(resumedEvents).toHaveLength(1);
+      expect(resumedEvents[0].workflowInstanceId).toBe(wfId);
+    });
+
+    it('logs WORKFLOW_PAUSED and WORKFLOW_RESUMED execution events', async () => {
+      const spec = makeLinearWorkflow(1);
+      const wfId = await runner.createWorkflow(spec);
+      await runner.startWorkflow(wfId);
+
+      await runner.pauseWorkflow(wfId);
+      await runner.resumeWorkflow(wfId);
+
+      const logs = await ctx.logger.getByWorkflow(wfId);
+      const eventTypes = logs.map((l) => l.event_type);
+
+      expect(eventTypes).toContain('WORKFLOW_PAUSED');
+      expect(eventTypes).toContain('WORKFLOW_RESUMED');
+    });
   });
 
   // -----------------------------------------------------------------------

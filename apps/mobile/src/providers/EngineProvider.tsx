@@ -195,6 +195,18 @@ export function EngineProvider({ children }: PropsWithChildren) {
       }),
     );
 
+    unsubscribers.push(
+      eventBus.on('WORKFLOW_PAUSED', ({ workflowInstanceId }) => {
+        useExecutionStore.getState().updateWorkflowState(workflowInstanceId, 'PAUSED');
+      }),
+    );
+
+    unsubscribers.push(
+      eventBus.on('WORKFLOW_RESUMED', ({ workflowInstanceId }) => {
+        useExecutionStore.getState().updateWorkflowState(workflowInstanceId, 'RUNNING');
+      }),
+    );
+
     // Subscribe to step state changes and derive active steps.
     // Child workflow steps are mapped to the root parent workflow ID
     // so they appear in the parent's carousel (seamless inline display).
