@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Engine Core** - ISA-88 state machine, scheduler, parameter/condition subsystems, import pipeline, crash recovery
 - [x] **Phase 3: Execution UI** - WYSIWYG form renderer, step carousel, execution screen, home screen, state controls, navigation
 - [x] **Phase 4: Workflow Proxy + Ancillary Features** - Nested workflow execution, history display, notifications, settings
-- [ ] **Phase 5: Polish + PDF Export** - Execution report export, performance tuning, production hardening
+- [x] **Phase 5: Polish + PDF Export** - Execution report export, performance tuning, production hardening
 
 ## Phase Details
 
@@ -102,8 +102,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: PDF export service (mobile + web), HTML report template, Export button on history detail
-- [ ] 05-02: Alert.alert confirmation migration, import progress indicator, history pagination, Zustand selector optimization
+- [x] 05-01: PDF export service (mobile + web), HTML report template, Export button on history detail
+- [x] 05-02: Alert.alert confirmation migration, import progress indicator, history pagination, Zustand selector optimization
 
 ## Progress
 
@@ -116,8 +116,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Engine Core | 5/5 | ✓ Complete | 2026-02-25 |
 | 3. Execution UI | 4/4 | ✓ Complete | 2026-02-25 |
 | 4. Workflow Proxy + Ancillary | 3/3 | ✓ Complete | 2026-02-26 |
-| 5. Polish + PDF Export | 0/2 | Not started | - |
+| 5. Polish + PDF Export | 2/2 | ✓ Complete | 2026-03-01 |
 
 ---
 *Roadmap created: 2026-02-24*
-*Last updated: 2026-02-26*
+*Last updated: 2026-03-01*
