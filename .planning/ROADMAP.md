@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Workflow Proxy + Ancillary Features** - Nested workflow execution, history display, notifications, settings
 - [x] **Phase 5: Polish + PDF Export** - Execution report export, performance tuning, production hardening
 - [x] **Phase 6: Pause/Resume Fix + Crash Recovery** - Fix WORKFLOW_PAUSED event gap, complete crash recovery for automated steps
-- [ ] **Phase 7: UI Cleanup + Dead Code Removal** - Replace placeholder tabs, remove unused exports, add missing verification
+- [x] **Phase 7: UI Cleanup + Dead Code Removal** - Replace placeholder tabs, remove unused exports, add missing verification
 
 ## Phase Details
 
@@ -136,8 +136,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Smart Execute tab, Overview tab removal, FormActionButtons cleanup
-- [ ] 07-02-PLAN.md — Phase 3 VERIFICATION.md creation (retroactive verification)
+- [x] 07-01-PLAN.md — Smart Execute tab, Overview tab removal, FormActionButtons cleanup
+- [x] 07-02-PLAN.md — Phase 3 VERIFICATION.md creation (retroactive verification)
 
 ## Progress
 
@@ -152,7 +152,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Workflow Proxy + Ancillary | 3/3 | ✓ Complete | 2026-02-26 |
 | 5. Polish + PDF Export | 2/2 | ✓ Complete | 2026-03-01 |
 | 6. Pause/Resume Fix + Crash Recovery | 2/2 | ✓ Complete | 2026-03-01 |
-| 7. UI Cleanup + Dead Code Removal | 0/2 | Pending | — |
+| 7. UI Cleanup + Dead Code Removal | 2/2 | ✓ Complete | 2026-03-02 |
 
 ---
 *Roadmap created: 2026-02-24*
