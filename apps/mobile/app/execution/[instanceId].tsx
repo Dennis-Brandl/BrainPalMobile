@@ -169,6 +169,31 @@ export default function ExecutionScreen() {
     [runner],
   );
 
+  const handleResolveParameter = useCallback(
+    async (nameKey: string): Promise<string | null> => {
+      if (!instanceId) return null;
+      try {
+        return await runner.resolveParameter(instanceId, nameKey);
+      } catch (err) {
+        console.warn('ExecutionScreen: resolveParameter failed', err);
+        return null;
+      }
+    },
+    [runner, instanceId],
+  );
+
+  const handleWriteFormOutputParameters = useCallback(
+    async (outputs: Array<{ nameKey: string; value: string }>): Promise<void> => {
+      if (!instanceId || outputs.length === 0) return;
+      try {
+        await runner.writeFormOutputParameters(instanceId, outputs);
+      } catch (err) {
+        console.warn('ExecutionScreen: writeFormOutputParameters failed', err);
+      }
+    },
+    [runner, instanceId],
+  );
+
   const handlePause = useCallback(async () => {
     if (!instanceId) return;
     try {
@@ -274,6 +299,8 @@ export default function ExecutionScreen() {
               onIndexChange={setCurrentStepIndex}
               onStepComplete={handleStepComplete}
               images={images}
+              onResolveParameter={handleResolveParameter}
+              onWriteFormOutputParameters={handleWriteFormOutputParameters}
             />
             <DotIndicator
               count={activeSteps.length}

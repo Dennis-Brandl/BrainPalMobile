@@ -1,36 +1,41 @@
-// TextElement: Renders plain text content from a form element spec.
+// TextElement: Renders rich text content (HTML) from a form element spec.
+// Supports bold, italic, underline, inline styles, and parameter chip substitution.
 
 import React from 'react';
-import { Text, View, StyleSheet } from 'react-native';
-import type { FormElementSpec } from '@brainpal/engine';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import RenderHtml from 'react-native-render-html';
 import { colors } from '@brainpal/ui/src/theme/colors';
 import { typography } from '@brainpal/ui/src/theme/typography';
+import { replaceParamChips } from '../../../utils/resolve-param-chips';
 import type { ElementProps } from './types';
 
-/**
- * Strips HTML tags from content string for v1 plain text rendering.
- */
-function stripHtmlTags(html: string): string {
-  return html.replace(/<[^>]*>/g, '');
-}
+export function TextElement({ element, resolvedParams }: ElementProps) {
+  const { width } = useWindowDimensions();
+  const rawHtml = element.content?.content ?? element.content?.plainText ?? '';
 
-export function TextElement({ element }: ElementProps) {
-  const rawContent = element.content?.content ?? element.content?.plainText ?? '';
-  const displayText = stripHtmlTags(rawContent);
+  // Substitute parameter chips with resolved values
+  const html = resolvedParams
+    ? replaceParamChips(rawHtml, resolvedParams)
+    : rawHtml;
+
+  const baseStyle: Record<string, unknown> = {
+    ...typography.body,
+    color: element.color ?? colors.textPrimary,
+    ...(element.fontSize != null && { fontSize: element.fontSize }),
+    ...(element.align != null && { textAlign: element.align }),
+  };
 
   return (
     <View style={styles.container}>
-      <Text
-        style={[
-          styles.text,
-          element.fontSize != null && { fontSize: element.fontSize },
-          element.color != null && { color: element.color },
-          element.align != null && { textAlign: element.align as 'left' | 'center' | 'right' },
-        ]}
-        numberOfLines={0}
-      >
-        {displayText}
-      </Text>
+      <RenderHtml
+        source={{ html }}
+        contentWidth={width}
+        baseStyle={baseStyle}
+        tagsStyles={{
+          p: { margin: 0, padding: 0 },
+          body: { margin: 0, padding: 0 },
+        }}
+      />
     </View>
   );
 }
@@ -38,9 +43,5 @@ export function TextElement({ element }: ElementProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  text: {
-    ...typography.body,
-    color: colors.textPrimary,
   },
 });

@@ -122,7 +122,7 @@ export class ParameterResolver {
  * in the format "PropertyName.EntryName" or just "PropertyName" (with
  * entry name defaulting to "Value").
  */
-function parsePropertyReference(reference: string): {
+export function parsePropertyReference(reference: string): {
   propertyName: string;
   entryName: string;
 } {

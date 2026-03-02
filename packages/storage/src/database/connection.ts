@@ -33,11 +33,17 @@ export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
   if (currentVersion < 1) {
     // Drop and recreate during v1 development
     await db.execAsync(SCHEMA_SQL);
-    await db.execAsync('PRAGMA user_version = 1');
+    await db.execAsync('PRAGMA user_version = 2');
 
     // Seed with development data
     if (__DEV__) {
       await db.execAsync(SEED_SQL);
     }
+  } else if (currentVersion < 2) {
+    // Migration: STEP_ATTENTION default changed from ON to OFF
+    await db.execAsync(
+      `UPDATE notification_preferences SET enabled = 0 WHERE notification_type = 'STEP_ATTENTION'`
+    );
+    await db.execAsync('PRAGMA user_version = 2');
   }
 }

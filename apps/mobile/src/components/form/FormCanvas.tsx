@@ -1,7 +1,7 @@
 // FormCanvas: Scaled WYSIWYG canvas container.
 // Renders form elements at absolute positions within a uniformly scaled canvas.
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import type { FormLayoutEntry } from '@brainpal/engine';
 import { useCanvasScale } from '../../hooks/useCanvasScale';
@@ -19,6 +19,10 @@ export interface FormCanvasProps {
   onButtonPress?: (outputValue: string) => void;
   /** Image map: filename -> base64 data URI */
   images?: Map<string, string>;
+  /** Resolved parameter chip values for rich text substitution */
+  resolvedParams?: Record<string, string>;
+  /** Callback when a blockDone timer changes blocking state */
+  onBlockDoneChange?: (isBlocked: boolean) => void;
 }
 
 export function FormCanvas({
@@ -27,6 +31,8 @@ export function FormCanvas({
   onFormDataChange,
   onButtonPress,
   images,
+  resolvedParams,
+  onBlockDoneChange,
 }: FormCanvasProps) {
   const { scale, scaledWidth, scaledHeight } = useCanvasScale(
     layout.canvasWidth,
@@ -39,6 +45,30 @@ export function FormCanvas({
     },
     [onFormDataChange],
   );
+
+  // Track blocking timers
+  const [blockingTimers, setBlockingTimers] = useState<Set<string>>(new Set());
+  const isBlocked = blockingTimers.size > 0;
+
+  const handleTimerBlockChange = useCallback(
+    (fieldKey: string, isBlocking: boolean) => {
+      setBlockingTimers((prev) => {
+        const next = new Set(prev);
+        if (isBlocking) {
+          next.add(fieldKey);
+        } else {
+          next.delete(fieldKey);
+        }
+        if (next.size !== prev.size) {
+          onBlockDoneChange?.(next.size > 0);
+        }
+        return next;
+      });
+    },
+    [onBlockDoneChange],
+  );
+
+  const effectiveOnButtonPress = isBlocked ? undefined : onButtonPress;
 
   return (
     <ScrollView
@@ -80,7 +110,9 @@ export function FormCanvas({
                   formData={formData}
                   onFormDataChange={handleFormDataChange}
                   images={images}
-                  onButtonPress={onButtonPress}
+                  onButtonPress={effectiveOnButtonPress}
+                  resolvedParams={resolvedParams}
+                  onTimerBlockChange={handleTimerBlockChange}
                 />
               </View>
             ))}

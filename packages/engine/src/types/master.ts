@@ -160,7 +160,8 @@ export type FormElementType =
   | 'toggle'
   | 'switch'
   | 'radio'
-  | 'radiobutton';
+  | 'radiobutton'
+  | 'timer';
 
 export interface FormElementOption {
   label: string;
@@ -190,6 +191,18 @@ export interface FormElementSpec {
   placeholder?: string;
   /** Whether this element can be deleted from the form editor */
   deletable?: boolean;
+  /** Value Property reference (name.key) to write the field value on submit */
+  outputParameter?: string;
+  /** Default value source for textInput/textarea elements */
+  defaultSource?: { mode: 'static' | 'parameter'; value: string };
+  /** Timer duration in seconds (timer elements) */
+  durationSeconds?: number;
+  /** Timer direction (timer elements) */
+  direction?: 'countdown' | 'countup';
+  /** Whether the timer blocks the Done button until expired/stopped (timer elements) */
+  blockDone?: boolean;
+  /** Number of visible rows for textarea elements */
+  rows?: number;
 }
 
 // ---------------------------------------------------------------------------

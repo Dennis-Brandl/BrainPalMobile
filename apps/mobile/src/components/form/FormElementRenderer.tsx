@@ -20,6 +20,7 @@ import { TextAreaElement } from './elements/TextAreaElement';
 import { NumericInputElement } from './elements/NumericInputElement';
 import { ToggleSwitchElement } from './elements/ToggleSwitchElement';
 import { RadioButtonElement } from './elements/RadioButtonElement';
+import { TimerElement } from './elements/TimerElement';
 import type { ElementProps } from './elements/types';
 
 export interface FormElementRendererProps {
@@ -29,6 +30,10 @@ export interface FormElementRendererProps {
   images?: Map<string, string>;
   /** Button press handler for step completion */
   onButtonPress?: (outputValue: string) => void;
+  /** Resolved parameter chip values for rich text substitution */
+  resolvedParams?: Record<string, string>;
+  /** Callback when a blockDone timer changes blocking state */
+  onTimerBlockChange?: (fieldKey: string, isBlocking: boolean) => void;
 }
 
 /**
@@ -71,6 +76,8 @@ export function FormElementRenderer({
   onFormDataChange,
   images,
   onButtonPress,
+  resolvedParams,
+  onTimerBlockChange,
 }: FormElementRendererProps) {
   // Derive form field key: prefer fieldName (real packages) over content.plainText
   const fieldKey = element.fieldName ?? element.content?.plainText ?? '';
@@ -83,6 +90,10 @@ export function FormElementRenderer({
     onChange,
     images,
     onButtonPress,
+    resolvedParams,
+    onTimerBlockChange: onTimerBlockChange
+      ? (isBlocking: boolean) => onTimerBlockChange(fieldKey, isBlocking)
+      : undefined,
   };
 
   const type = element.type.toLowerCase();
@@ -133,6 +144,9 @@ export function FormElementRenderer({
     case 'radio':
     case 'radiobutton':
       return <RadioButtonElement {...elementProps} />;
+
+    case 'timer':
+      return <TimerElement {...elementProps} />;
 
     default:
       return <FallbackElement element={element} />;

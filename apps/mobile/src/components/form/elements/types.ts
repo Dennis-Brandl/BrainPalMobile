@@ -13,4 +13,8 @@ export interface ElementProps {
   images?: Map<string, string>;
   /** Button press handler for step completion (only used by ButtonElement) */
   onButtonPress?: (outputValue: string) => void;
+  /** Resolved parameter chip values for rich text substitution */
+  resolvedParams?: Record<string, string>;
+  /** Callback when a blockDone timer changes blocking state */
+  onTimerBlockChange?: (isBlocking: boolean) => void;
 }

@@ -317,7 +317,7 @@ CREATE TABLE notification_preferences (
 );
 
 -- Default preferences
-INSERT INTO notification_preferences VALUES ('STEP_ATTENTION', 1);
+INSERT INTO notification_preferences VALUES ('STEP_ATTENTION', 0);
 INSERT INTO notification_preferences VALUES ('ACTION_COMPLETED', 1);
 INSERT INTO notification_preferences VALUES ('STATE_TRANSITION', 0);
 INSERT INTO notification_preferences VALUES ('RESOURCE_ACQUIRED', 0);

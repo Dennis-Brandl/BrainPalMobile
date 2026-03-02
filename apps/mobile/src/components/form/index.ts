@@ -20,5 +20,6 @@ export {
   NumericInputElement,
   ToggleSwitchElement,
   RadioButtonElement,
+  TimerElement,
 } from './elements';
 export type { ElementProps } from './elements';

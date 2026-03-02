@@ -14,3 +14,4 @@ export { TextAreaElement } from './TextAreaElement';
 export { NumericInputElement } from './NumericInputElement';
 export { ToggleSwitchElement } from './ToggleSwitchElement';
 export { RadioButtonElement } from './RadioButtonElement';
+export { TimerElement } from './TimerElement';

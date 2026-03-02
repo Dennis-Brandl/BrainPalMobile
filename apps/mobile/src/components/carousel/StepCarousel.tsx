@@ -2,7 +2,7 @@
 // user interaction steps. Each page renders a FormCanvas with embedded action buttons.
 // Supports wrap-around navigation via Previous/Next buttons.
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -31,6 +31,8 @@ export interface StepCarouselProps {
   onIndexChange: (index: number) => void;
   onStepComplete: (stepInstanceId: string, formData: Record<string, string>, outputValue?: string) => void;
   images: Map<string, string>;
+  onResolveParameter?: (nameKey: string) => Promise<string | null>;
+  onWriteFormOutputParameters?: (outputs: Array<{ nameKey: string; value: string }>) => Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -53,6 +55,8 @@ export function StepCarousel({
   onIndexChange,
   onStepComplete,
   images,
+  onResolveParameter,
+  onWriteFormOutputParameters,
 }: StepCarouselProps) {
   const flatListRef = useRef<FlatList<ActiveStep>>(null);
 
@@ -61,6 +65,104 @@ export function StepCarousel({
 
   // Track submitting steps to disable buttons
   const [submittingSteps, setSubmittingSteps] = useState<Set<string>>(new Set());
+
+  // Resolved parameter values for rich text substitution: stepInstanceId -> Record<name.key, value>
+  const [resolvedParamsMap, setResolvedParamsMap] = useState<Record<string, Record<string, string>>>({});
+
+  // Track which steps have already had defaults resolved (avoid re-resolving)
+  const resolvedDefaultsRef = useRef<Set<string>>(new Set());
+
+  // Track steps blocked by timers (blockDone)
+  const [blockedSteps, setBlockedSteps] = useState<Set<string>>(new Set());
+
+  const handleBlockDoneChange = useCallback(
+    (stepInstanceId: string, isBlocked: boolean) => {
+      setBlockedSteps((prev) => {
+        const next = new Set(prev);
+        if (isBlocked) {
+          next.add(stepInstanceId);
+        } else {
+          next.delete(stepInstanceId);
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
+  // -----------------------------------------------------------------------
+  // Default resolution for new steps
+  // -----------------------------------------------------------------------
+
+  useEffect(() => {
+    if (!onResolveParameter) return;
+
+    const newSteps = steps.filter(
+      (s) => !resolvedDefaultsRef.current.has(s.stepInstanceId),
+    );
+    if (newSteps.length === 0) return;
+
+    // Mark as being resolved immediately to avoid double-resolving
+    for (const s of newSteps) {
+      resolvedDefaultsRef.current.add(s.stepInstanceId);
+    }
+
+    (async () => {
+      for (const step of newSteps) {
+        if (!step.formLayout) continue;
+
+        const defaults: Record<string, string> = {};
+        const paramChipKeys = new Set<string>();
+
+        for (const el of step.formLayout.elements) {
+          const fieldKey = el.fieldName ?? el.content?.plainText ?? '';
+
+          // Resolve defaultSource for input/textarea elements
+          if (el.defaultSource) {
+            if (el.defaultSource.mode === 'static') {
+              defaults[fieldKey] = el.defaultSource.value;
+            } else if (el.defaultSource.mode === 'parameter') {
+              const resolved = await onResolveParameter(el.defaultSource.value);
+              defaults[fieldKey] = resolved ?? '';
+            }
+          }
+
+          // Collect param chip references from text/header elements
+          if ((el.type === 'text' || el.type === 'header') && el.content?.content) {
+            const chipRegex = /data-param-chip="([^"]+)"/g;
+            let match: RegExpExecArray | null;
+            while ((match = chipRegex.exec(el.content.content)) !== null) {
+              paramChipKeys.add(match[1]);
+            }
+          }
+        }
+
+        // Seed form data with resolved defaults
+        if (Object.keys(defaults).length > 0) {
+          setFormDataMap((prev) => ({
+            ...prev,
+            [step.stepInstanceId]: {
+              ...defaults,
+              ...(prev[step.stepInstanceId] ?? {}),
+            },
+          }));
+        }
+
+        // Resolve parameter chips for rich text
+        if (paramChipKeys.size > 0) {
+          const resolvedParams: Record<string, string> = {};
+          for (const key of paramChipKeys) {
+            const value = await onResolveParameter(key);
+            resolvedParams[key] = value ?? `<${key}>`;
+          }
+          setResolvedParamsMap((prev) => ({
+            ...prev,
+            [step.stepInstanceId]: resolvedParams,
+          }));
+        }
+      }
+    })();
+  }, [steps, onResolveParameter]);
 
   // -----------------------------------------------------------------------
   // Form data handlers
@@ -84,12 +186,31 @@ export function StepCarousel({
   // -----------------------------------------------------------------------
 
   const handleSubmit = useCallback(
-    (stepInstanceId: string, outputValue?: string) => {
+    async (stepInstanceId: string, outputValue?: string) => {
       setSubmittingSteps((prev) => new Set(prev).add(stepInstanceId));
       const stepFormData = formDataMap[stepInstanceId] ?? {};
+
+      // Write output parameters to Value Properties before completing the step
+      if (onWriteFormOutputParameters) {
+        const step = steps.find((s) => s.stepInstanceId === stepInstanceId);
+        if (step?.formLayout) {
+          const outputs: Array<{ nameKey: string; value: string }> = [];
+          for (const el of step.formLayout.elements) {
+            if (el.outputParameter) {
+              const fieldKey = el.fieldName ?? el.content?.plainText ?? '';
+              const fieldValue = stepFormData[fieldKey] ?? '';
+              outputs.push({ nameKey: el.outputParameter, value: fieldValue });
+            }
+          }
+          if (outputs.length > 0) {
+            await onWriteFormOutputParameters(outputs);
+          }
+        }
+      }
+
       onStepComplete(stepInstanceId, stepFormData, outputValue);
     },
-    [onStepComplete, formDataMap],
+    [onStepComplete, formDataMap, steps, onWriteFormOutputParameters],
   );
 
   // -----------------------------------------------------------------------
@@ -127,6 +248,8 @@ export function StepCarousel({
     ({ item }: ListRenderItemInfo<ActiveStep>) => {
       const stepFormData = formDataMap[item.stepInstanceId] ?? {};
       const isSubmitting = submittingSteps.has(item.stepInstanceId);
+      const isBlocked = blockedSteps.has(item.stepInstanceId);
+      const isDisabled = isSubmitting || isBlocked;
 
       return (
         <View style={{ width: SCREEN_WIDTH }}>
@@ -146,8 +269,12 @@ export function StepCarousel({
                 handleFormDataChange(item.stepInstanceId, key, value)
               }
               images={images}
-              onButtonPress={isSubmitting ? undefined : (outputValue) =>
+              onButtonPress={isDisabled ? undefined : (outputValue) =>
                 handleSubmit(item.stepInstanceId, outputValue)
+              }
+              resolvedParams={resolvedParamsMap[item.stepInstanceId]}
+              onBlockDoneChange={(blocked) =>
+                handleBlockDoneChange(item.stepInstanceId, blocked)
               }
             />
           ) : (
@@ -158,7 +285,7 @@ export function StepCarousel({
         </View>
       );
     },
-    [formDataMap, submittingSteps, images, handleFormDataChange, handleSubmit],
+    [formDataMap, submittingSteps, blockedSteps, images, handleFormDataChange, handleSubmit, resolvedParamsMap, handleBlockDoneChange],
   );
 
   const keyExtractor = useCallback(

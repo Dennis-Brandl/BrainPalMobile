@@ -12,7 +12,7 @@ import type { StepExecutionContext } from './step-executor';
 import { StateMachine } from '../state-machine/state-machine';
 import { ISA88_OBSERVABLE_TRANSITIONS } from '../state-machine/isa88-config';
 import { Scheduler } from '../scheduler/scheduler';
-import { ParameterResolver } from '../parameter-resolver/parameter-resolver';
+import { ParameterResolver, parsePropertyReference } from '../parameter-resolver/parameter-resolver';
 import { ScopeResolver } from '../parameter-resolver/scope-resolver';
 import { ConditionEvaluator } from '../condition-evaluator/condition-evaluator';
 import { ResourceManager } from '../resource-manager/resource-manager';
@@ -441,6 +441,35 @@ export class WorkflowRunner implements IWorkflowRunnerForProxy {
 
     this.config.eventBus.emit('WORKFLOW_STOPPED', { workflowInstanceId });
     this.activeWorkflows.delete(workflowInstanceId);
+  }
+
+  /**
+   * Resolve a single Value Property reference (name.key format) for a workflow.
+   * Used by the UI to pre-fill form fields from defaultSource parameter references.
+   */
+  async resolveParameter(workflowInstanceId: string, nameKey: string): Promise<string | null> {
+    const { propertyName, entryName } = parsePropertyReference(nameKey);
+    return this.scopeResolver.lookupProperty(workflowInstanceId, propertyName, entryName);
+  }
+
+  /**
+   * Write form output parameters back to Value Properties.
+   * Used by the UI to persist textInput/textarea values on form submit.
+   */
+  async writeFormOutputParameters(
+    workflowInstanceId: string,
+    outputs: Array<{ nameKey: string; value: string }>,
+  ): Promise<void> {
+    for (const { nameKey, value } of outputs) {
+      const { propertyName, entryName } = parsePropertyReference(nameKey);
+      await this.config.valuePropertyRepo.upsertEntry(
+        'workflow',
+        workflowInstanceId,
+        propertyName,
+        entryName,
+        value,
+      );
+    }
   }
 
   /**
