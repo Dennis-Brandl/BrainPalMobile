@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, type Href } from 'expo-router';
+import { useRouter, useFocusEffect, type Href } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors, typography, spacing } from '@brainpal/ui';
 import { useCompletedWorkflows, useDeleteWorkflow, type HistoryWorkflow } from '../../src/hooks/useHistory';
@@ -43,6 +43,13 @@ export default function HistoryScreen() {
   const router = useRouter();
   const { workflows, loading, hasMore, loadMore, refresh } = useCompletedWorkflows();
   const deleteWorkflow = useDeleteWorkflow();
+
+  // Re-query when tab gains focus (tabs stay mounted in tab navigator)
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   const handlePress = useCallback(
     (instanceId: string) => {
