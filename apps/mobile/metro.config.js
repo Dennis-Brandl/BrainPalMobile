@@ -1,6 +1,19 @@
 const { getDefaultConfig } = require('expo/metro-config');
+const path = require('path');
 
-const config = getDefaultConfig(__dirname);
+const projectRoot = __dirname;
+const monorepoRoot = path.resolve(projectRoot, '../..');
+
+const config = getDefaultConfig(projectRoot);
+
+// Monorepo support: watch all files in the monorepo
+config.watchFolders = [monorepoRoot];
+
+// Monorepo support: resolve packages from both project and root node_modules
+config.resolver.nodeModulesPaths = [
+  path.resolve(projectRoot, 'node_modules'),
+  path.resolve(monorepoRoot, 'node_modules'),
+];
 
 // Add WASM asset extension support
 config.resolver.assetExts.push('wasm');

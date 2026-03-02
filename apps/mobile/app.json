@@ -5,6 +5,9 @@
     "version": "0.0.1",
     "scheme": "brainpal-mobile",
     "orientation": "portrait",
+    "android": {
+      "package": "com.brainpal.mobile"
+    },
     "newArchEnabled": true,
     "web": {
       "bundler": "metro",
