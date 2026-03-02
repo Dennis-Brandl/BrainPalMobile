@@ -3,3 +3,20 @@ node_modules/
 dist/
 *.tsbuildinfo
 .turbo/
+
+# Reference documents (kept locally, not tracked)
+.BrainPalMobileFirstSpec/
+.BrainPalMobileParametersAndTimers/
+*.pptx
+*.docx
+*.xlsx
+*.WFmasterX
+BrainPal Mobile.txt
+
+# Temp/scratch files
+nul
+inspect-images.js
+write-verification.js
+
+# Local Claude Code settings
+.claude/settings.local.json
